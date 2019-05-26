@@ -5,31 +5,30 @@ import random
 import time
 import threading
 
-from anytree import Node, RenderTree, LevelOrderGroupIter
+from anytree import Node, RenderTree, LevelOrderGroupIter, LevelOrderIter
 
 class User:
-  questions = []
-  prompts = []
+  def __init__(self, user_id):
+    self.questions = []
+    self.prompts = []
+    self.id = user_id 
 
 class Prompt:
-  ques = None
-  ans = None
   def __init__(self, ques, ans):
     self.ques = ques 
     self.ans = ans 
 
 class Answer:
-  user = None 
-  val = False
-
   def __init__(self, user, val):
     self.user = user
     self.val = val
 
 class Question(Node):
-  ans_open = True
-  prompt_open = True
-  answers = []
+  def __init__(self, *args, **kwargs):
+    super(self.__class__, self).__init__(*args, **kwargs)
+    self.ans_open = True
+    self.prompt_open = True
+    self.answers = []
 
   def add_answer(self, ans):
     if self.ans_open:
@@ -59,13 +58,15 @@ class Question(Node):
 def answer_question(user):
   if len(user.questions) > 0:
     q = user.questions.pop(0)
-    time.sleep(random.randint(1, 10))
+    time.sleep(random.randint(1, 5))
+    print("user %d answers %s" % (user.id, q.name))
+    print_root()
     q.add_answer(Answer(user, random.randint(0,1) == 1))
 
 def create_question(user):
   if len(user.prompts) > 0:
     p = user.prompts.pop(0)
-    time.sleep(random.randint(1, 10))
+    time.sleep(random.randint(1, 5))
     p.ques.add_question(str(ques_count))
 
 #def create_question(node):
@@ -73,13 +74,13 @@ def create_question(user):
 #  node.add_question(str(ques_count))
 
 def open_answers(is_open):
-  questions = [[node for node in children] for children in LevelOrderGroupIter(root)]
-  for question in questions[-1]:
+  questions = [[node for node in children] for children in LevelOrderGroupIter(root)][-1]
+  for question in questions:
     question.ans_open = is_open 
 
 def open_prompts(is_open):
-  questions = [[node for node in children] for children in LevelOrderGroupIter(root)]
-  for question in questions[-1]:
+  questions = [[node for node in children] for children in LevelOrderGroupIter(root)][-1]
+  for question in questions:
     question.prompt_open = is_open 
   
 def create_prompt(question, ans):
@@ -87,10 +88,10 @@ def create_prompt(question, ans):
 
 def close_answers():
   print("close_answers")
-  print_root()
-  open_answers(False)
-  questions = [[node for node in children] for children in LevelOrderGroupIter(root)]
-  for question in questions[-1]:
+  #open_answers(False)
+  #questions = [[node for node in children] for children in LevelOrderGroupIter(root)][-1]
+  questions = list(filter(lambda n : len(n.children) == 0, [node for node in LevelOrderIter(root)]))
+  for question in questions:
     if not question.check_consensus():
       print("no consensus")
       print_root()
@@ -99,46 +100,50 @@ def close_answers():
     else:
       print("omg consensus")
       print_root()
+  print_users()
   collect_prompts()
 
 def collect_answers():
   print("collect_answers")
-  print_root()
-  open_answers(True)
+  #open_answers(True)
+
   for user in users:
     user_thread = threading.Thread(target=answer_question, args=(user,))
     #user_thread.daemon = True
     user_thread.start()
 
-  t = threading.Timer(5, close_answers)
+  t = threading.Timer(10, close_answers)
   t.start()
 
 def close_prompts():
   print("close_prompts")
-  print_root()
-  open_prompts(False)
+  #open_prompts(False)
   collect_answers()
 
 def collect_prompts():
   print("collect_prompts")
-  print_root()
-  open_prompts(True)
+  #open_prompts(True)
   for user in users:
     user_thread = threading.Thread(target=create_question, args=(user,))
     #user_thread.daemon = True
     user_thread.start()
 
-  t = threading.Timer(5, close_prompts)
+  t = threading.Timer(10, close_prompts)
   t.start()
 
 ques_count = 0
-users = [User(), User(), User()]
+#users = [User(1), User(2), User(3)]
+users = [User(1), User(2)]
 root = Question("Root")
 
 def print_root():
   for pre, fill, node in RenderTree(root):
-#    ans_str = for  
-    print("%s%s" % (pre, node.name))
+    ans_str = ','.join(map(str, [(ans.user.id, ans.val) for ans in node.answers]))
+    print("%s%s %s" % (pre, node.name, ans_str))
+
+def print_users():
+    for user in users:
+        print("user %d %d - %d" % (user.id, len(user.questions), len(user.prompts)))
 
 def main():
 
