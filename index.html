@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+</head>
+<body>
+<script>
+(function() {
+
+  // Websocket stuff - JBG
+
+  const ws = new WebSocket('ws://localhost:8000')
+
+  ws.onopen = function(e) {
+    console.log('Websocket open.')
+    ws.send(JSON.stringify({ cmd: 'HELLO' }))
+  }
+
+  ws.onclose = function(e) {
+    console.log('Websocket closed.')
+  }
+
+  ws.onerror = function(e) {
+    console.log('Websocket errored.')
+  }
+
+  ws.onmessage = function(e) {
+    console.log(e.data)
+    const res = JSON.parse(e.data)
+    const cmd = res['cmd']
+    switch(cmd) {
+      case 'PONG':
+        console.log('Server is there.')
+        break
+      case 'USER':
+        console.log('User id: ' + res['payload'])
+        break
+    }
+    
+    /*
+    var fr = new FileReader()
+    fr.onload = function() {
+      var obj = JSON.parse(fr.result)
+      console.log(obj)
+      document.querySelector('p').innerHTML = obj.txt
+    }
+    fr.readAsText(e.data)
+    */
+  }
+
+/*
+var xhr = new XMLHttpRequest()
+xhr.open('POST', '/', true)
+
+//Send the proper header information along with the request
+xhr.setRequestHeader('Content-Type', 'application/json')
+
+xhr.onreadystatechange = function() { // Call a function when the state changes.
+  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
+    // Request finished. Do processing here.
+    alert(xhr.responseText)
+  }
+}
+xhr.send(JSON.stringify({ foo: 'bar' }))
+*/
+
+})()
+</script>
+</body>
+</html>
+
+
