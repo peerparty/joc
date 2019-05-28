@@ -5,11 +5,17 @@
 </head>
 <body>
 <script>
+
+function randomText() {
+  return Math.random().toString(36).substring(7)
+}
+
 (function() {
 
   // Websocket stuff - JBG
 
   const ws = new WebSocket('ws://localhost:8000')
+  let userId = -1
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
@@ -33,7 +39,19 @@
         console.log('Server is there.')
         break
       case 'USER':
-        console.log('User id: ' + res['payload'])
+        userId = res['id']
+        console.log('User id: ' + userId )
+        break
+      case 'QUESTION':
+        console.log('Question is: ' + res['txt'])
+        ws.send(JSON.stringify({ cmd: 'ANSWER', id: userId, val: Math.random() >= 0.5 }))
+        break
+      case 'PROMPT':
+        console.log('Prompt for question: ' + res['txt'])
+        ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: randomText() }))
+        break
+      default:
+        console.log('Unknown CMD: ' + cmd)
         break
     }
     
