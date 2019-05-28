@@ -132,8 +132,16 @@ class ConsensusServer:
             if(q_size > 0):
                 self.collect_prompts()
             else:
+                self.send_done()
                 print("DONE!!!")
                 self.print_root()
+                time.sleep(self.round_time)
+
+    def send_done(self):
+        for user_id, user in self.users.items():
+            print('sending done', user_id)
+            payload = { 'cmd': 'DONE' }
+            user.ws.sendMessage(json.dumps(payload))
 
     def collect_answers(self):
         print("collect_answers")
@@ -157,7 +165,7 @@ class ConsensusServer:
         for user_id, user in self.users.items():
             if len(user.prompts) > 0:
                 user.p = user.prompts.pop(0)
-                payload = { 'cmd': 'PROMPT', 'txt': user.p.ques.name }
+                payload = { 'cmd': 'PROMPT', 'txt': user.p.ques.name, 'ans': user.p.ans.val }
                 user.ws.sendMessage(json.dumps(payload))
 
         t = threading.Timer(self.round_time, self.close_prompts)

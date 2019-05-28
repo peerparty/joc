@@ -1,21 +1,160 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-</head>
-<body>
-<script>
+<meta charset="utf-8">
+<style>
 
-function randomText() {
-  return Math.random().toString(36).substring(7)
+* {
+  margin: 0;
 }
 
+html, body, #question {
+  height: 100%;
+}
+
+#question {
+  display: none;
+}
+
+#prompt {
+  display: none;
+  height: 50vh;
+}
+
+textarea {
+  height: 100%;
+  width: 100%;
+  font-size: 32px; 
+}
+
+h1, h2, p {
+  text-align: center;
+  width: 100%;
+}
+
+.center {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.panel {
+  position: relative;
+  height: 33%;
+}
+
+.yes {
+  background-color: #0f0;
+}
+
+.no {
+  background-color: #f00;
+}
+
+.submit {
+  background-color: #00f;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.green {
+  color: #0f0;
+}
+
+.red {
+  color: #f00;
+}
+
+.white {
+  color: #fff;
+}
+
+</style>
+</head>
+<body>
+<div id="instruction">
+  <h1 class="center">Waiting...</h1>
+</div>
+<div id="question">
+  <div class="panel button yes"><h1 class="center">Yes</h1></div>
+  <div class="panel text">
+    <h1 class="center"></h1>
+  </div>
+  <div class="panel button no"><h1 class="center">No</h1></div>
+</div>
+<div id="prompt">
+  <div class="panel text">
+    <div class="center">
+      <p class="question"></p>
+      <p class="bold">You responded <span class="answer green">Yes</span></p>
+      <h2>Please explain you answer in the form of a Yes/No question:</h2>
+    </div>
+  </div>
+  <div class="panel"><textarea></textarea></div>
+  <div class="panel button submit"><h1 class="center white">Submit</h1></div>
+</div>
+<script>
+
 (function() {
+
+  let userId = -1
+
+  /*
+  function randomText() {
+    return Math.random().toString(36).substring(7)
+  }
+  */
+
+  function showInstruction(txt) {
+    document.querySelector('#instruction').style.display = 'block' 
+    document.querySelector('#prompt').style.display = 'none' 
+    document.querySelector('#question').style.display = 'none' 
+    document.querySelector('#instruction h1').innerHTML = txt
+  }
+
+  function showQuestion(txt) {
+    document.querySelector('#instruction').style.display = 'none' 
+    document.querySelector('#prompt').style.display = 'none' 
+    document.querySelector('#question').style.display = 'block' 
+    document.querySelector('#question .text h1').innerHTML = txt
+  }
+
+  function answerQuestion(val) {
+    document.querySelector('#instruction').style.display = 'block' 
+    document.querySelector('#prompt').style.display = 'none' 
+    document.querySelector('#question').style.display = 'none' 
+    ws.send(JSON.stringify({ cmd: 'ANSWER', id: userId, val: val }))
+  }
+
+  function showPrompt(txt, ans) {
+    document.querySelector('#instruction').style.display = 'none' 
+    document.querySelector('#prompt').style.display = 'block' 
+    document.querySelector('#question').style.display = 'none' 
+
+    document.querySelector('#prompt .question').innerHTML = txt
+    if(ans) {
+      document.querySelector('#prompt .answer').innerHTML = 'Yes' 
+      document.querySelector('#prompt .answer').classList.remove('red') 
+      document.querySelector('#prompt .answer').classList.add('green') 
+    } else {
+      document.querySelector('#prompt .answer').innerHTML = 'No' 
+      document.querySelector('#prompt .answer').classList.remove('green') 
+      document.querySelector('#prompt .answer').classList.add('red') 
+    }
+  }
+
+  function submitPrompt(val) {
+    document.querySelector('#instruction').style.display = 'block' 
+    document.querySelector('#prompt').style.display = 'none' 
+    document.querySelector('#question').style.display = 'none' 
+    ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: val }))
+  }
 
   // Websocket stuff - JBG
 
   const ws = new WebSocket('ws://localhost:8000')
-  let userId = -1
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
@@ -44,43 +183,32 @@ function randomText() {
         break
       case 'QUESTION':
         console.log('Question is: ' + res['txt'])
-        ws.send(JSON.stringify({ cmd: 'ANSWER', id: userId, val: Math.random() >= 0.5 }))
+        showQuestion(res['txt'])
         break
       case 'PROMPT':
         console.log('Prompt for question: ' + res['txt'])
-        ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: randomText() }))
+        showPrompt(res['txt'], res['ans'])
+        break
+      case 'DONE':
+        showInstruction("Done!")
         break
       default:
         console.log('Unknown CMD: ' + cmd)
         break
     }
-    
-    /*
-    var fr = new FileReader()
-    fr.onload = function() {
-      var obj = JSON.parse(fr.result)
-      console.log(obj)
-      document.querySelector('p').innerHTML = obj.txt
-    }
-    fr.readAsText(e.data)
-    */
   }
 
-/*
-var xhr = new XMLHttpRequest()
-xhr.open('POST', '/', true)
+  document.querySelector('#question .yes').addEventListener('click', (e) => {
+    answerQuestion(true)
+  })
 
-//Send the proper header information along with the request
-xhr.setRequestHeader('Content-Type', 'application/json')
+  document.querySelector('#question .no').addEventListener('click', (e) => {
+    answerQuestion(false)
+  })
 
-xhr.onreadystatechange = function() { // Call a function when the state changes.
-  if (this.readyState === XMLHttpRequest.DONE && this.status === 200) {
-    // Request finished. Do processing here.
-    alert(xhr.responseText)
-  }
-}
-xhr.send(JSON.stringify({ foo: 'bar' }))
-*/
+  document.querySelector('#prompt .submit').addEventListener('click', (e) => {
+    submitPrompt(document.querySelector('textarea').value)
+  })
 
 })()
 </script>
