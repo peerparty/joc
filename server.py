@@ -68,7 +68,8 @@ class Question(Node):
 
 class ConsensusServer:
     def __init__(self):
-        self.round_time = 20 
+        self.answer_time = 15 
+        self.prompt_time = 30 
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
@@ -128,7 +129,6 @@ class ConsensusServer:
             self.print_root()
             self.print_users()
 
-            #q_size = reduce(lambda c, user : c + len(user.prompts) + len(user.questions), list(self.users.values()), 0)
             p_size = reduce(lambda c, user : c + len(user.prompts), list(self.users.values()), 0)
             q_size = reduce(lambda c, user : c + len(user.questions), list(self.users.values()), 0)
             if(p_size > 0):
@@ -139,7 +139,7 @@ class ConsensusServer:
                 self.send_done()
                 print("DONE!!!")
                 self.print_root()
-                time.sleep(self.round_time)
+                time.sleep(self.answer_time)
 
     def send_done(self):
         for user_id, user in self.users.items():
@@ -156,7 +156,7 @@ class ConsensusServer:
                 payload = { 'cmd': 'QUESTION', 'txt': user.q.name }
                 user.ws.sendMessage(json.dumps(payload))
 
-        t = threading.Timer(self.round_time, self.close_answers)
+        t = threading.Timer(self.answer_time, self.close_answers)
         t.start()
 
     def close_prompts(self):
@@ -172,7 +172,7 @@ class ConsensusServer:
                 payload = { 'cmd': 'PROMPT', 'txt': user.p.ques.name, 'ans': user.p.ans.val }
                 user.ws.sendMessage(json.dumps(payload))
 
-        t = threading.Timer(self.round_time, self.close_prompts)
+        t = threading.Timer(self.prompt_time, self.close_prompts)
         t.start()
 
     def print_root(self):

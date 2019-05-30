@@ -91,6 +91,30 @@ h1, h2, p {
   background-color: #83c8f9;
 }
 
+@keyframes uber {
+  0% { background: #83c8f9; }
+  25% { background: #ffff00; }
+  50% { background: #ff69b4; }
+  75% { background: #000; }
+  100% { background: #fff; }
+}
+
+.ubermate {
+  animation-name: uber;
+  animation-duration: 1s;
+  animation-timing-function: ease;
+  animation-iteration-count: 3;
+  animation-direction: normal;
+  animation-play-state: running;
+
+  -webkit-animation-name: uber;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-timing-function: ease;
+  -webkit-animation-iteration-count: 3;
+  -webkit-animation-direction: normal;
+  -webkit-animation-play-state: running;
+}
+
 </style>
 </head>
 <body>
@@ -121,7 +145,7 @@ h1, h2, p {
 (function() {
 
   let userId = -1
-  let counter = 20;
+  let counter = -1;
 
   /*
   function randomText() {
@@ -174,8 +198,8 @@ h1, h2, p {
     ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: val }))
   }
 
-  function startCounter() {
-    counter = 20
+  function startCounter(t) {
+    counter = t 
     document.querySelector('.counter').style.display = 'block'
   }
 
@@ -214,12 +238,12 @@ h1, h2, p {
         console.log('User id: ' + userId )
         break
       case 'QUESTION':
-        startCounter()
+        startCounter(15)
         console.log('Question is: ' + res['txt'])
         showQuestion(res['txt'])
         break
       case 'PROMPT':
-        startCounter()
+        startCounter(30)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
         break
@@ -237,12 +261,14 @@ h1, h2, p {
   }
 
   document.querySelector('#question .yes').addEventListener('click', (e) => {
+    document.querySelector('#instruction').classList.add('ubermate') 
     document.querySelector('#instruction').classList.remove('no')
     document.querySelector('#instruction').classList.add('yes')
     answerQuestion(true)
   })
 
   document.querySelector('#question .no').addEventListener('click', (e) => {
+    document.querySelector('#instruction').classList.add('ubermate') 
     document.querySelector('#instruction').classList.remove('yes')
     document.querySelector('#instruction').classList.add('no')
     answerQuestion(false)
