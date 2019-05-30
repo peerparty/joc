@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 # -*- coding: utf-8 -*-
 
 import random
@@ -15,7 +15,7 @@ from anytree import Node, RenderTree, LevelOrderGroupIter, LevelOrderIter, PostO
 from enum import Enum
 
 def random_txt():
-  return ''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(32))
+  return ''.join(random.choice(string.ascii_uppercase + string.digits).encode('utf-8') for _ in range(32))
 
 class User:
     def __init__(self, user_id, ws):
@@ -68,7 +68,7 @@ class Question(Node):
 
 class ConsensusServer:
     def __init__(self):
-        self.round_time = 10 
+        self.round_time = 20 
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
@@ -128,9 +128,13 @@ class ConsensusServer:
             self.print_root()
             self.print_users()
 
-            q_size = reduce(lambda c, user : c + len(user.prompts) + len(user.questions), list(self.users.values()), 0)
-            if(q_size > 0):
+            #q_size = reduce(lambda c, user : c + len(user.prompts) + len(user.questions), list(self.users.values()), 0)
+            p_size = reduce(lambda c, user : c + len(user.prompts), list(self.users.values()), 0)
+            q_size = reduce(lambda c, user : c + len(user.questions), list(self.users.values()), 0)
+            if(p_size > 0):
                 self.collect_prompts()
+            elif(q_size > 0):
+                self.collect_answers()
             else:
                 self.send_done()
                 print("DONE!!!")
@@ -200,14 +204,17 @@ class ConsensusServer:
 
     def init_questions(self):
         print("init_questions")
-        self.add_question(random_txt(), parent=self.root)
+        print("Enter the starting question:")
+        question = input()
+        self.add_question(question, parent=self.root)
         self.print_root()
+
         self.collect_answers()
 
     def start(self):
-        print("Waiting for users to join ...")
-        t = threading.Timer(self.round_time, self.init_questions)
-        t.start()
+        self.init_questions()
+        #t = threading.Timer(self.round_time, self.init_questions)
+        #t.start()
   
 def main():
     try:
