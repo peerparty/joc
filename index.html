@@ -8,7 +8,7 @@
   margin: 0;
 }
 
-html, body, #question {
+html, body, #question, #instruction, #prompt {
   height: 100%;
 }
 
@@ -18,7 +18,7 @@ html, body, #question {
 
 #prompt {
   display: none;
-  height: 50vh;
+  height: 100vh;
 }
 
 textarea {
@@ -27,15 +27,32 @@ textarea {
   font-size: 32px; 
 }
 
+h1 {
+  font-size: 89px;
+}
+
 h1, h2, p {
   text-align: center;
   width: 100%;
 }
 
+h2, p {
+  font-size: 34px;
+}
+
+.counter {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  font-size: 55px;
+  display: none;
+}
+
 .center {
   position: absolute;
   top: 50%;
-  transform: translateY(-50%);
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .panel {
@@ -43,32 +60,67 @@ h1, h2, p {
   height: 33%;
 }
 
-.yes {
-  background-color: #0f0;
-}
-
-.no {
-  background-color: #f00;
-}
-
 .submit {
-  background-color: #00f;
+  background-color: #83c8f9;
 }
 
 .bold {
   font-weight: bold;
 }
 
-.green {
-  color: #0f0;
+.yes {
+  color: #ff69b4;
 }
 
-.red {
-  color: #f00;
+.no {
+  color: #ffff00;
 }
+
+.button.yes, #instruction.yes {
+  background-color: #ff69b4;
+  color: #000;
+}
+
+.button.no, #instruction.no {
+  background-color: #ffff00;
+  color: #000;
+}
+
 
 .white {
   color: #fff;
+}
+
+.answer {
+  font-size: 32px;
+}
+
+.done {
+  background-color: #83c8f9;
+}
+
+@keyframes uber {
+  0% { background: #83c8f9; }
+  25% { background: #ffff00; }
+  50% { background: #ff69b4; }
+  75% { background: #000; }
+  100% { background: #fff; }
+}
+
+.ubermate {
+  animation-name: uber;
+  animation-duration: 1s;
+  animation-timing-function: ease;
+  animation-iteration-count: 3;
+  animation-direction: normal;
+  animation-play-state: running;
+
+  -webkit-animation-name: uber;
+  -webkit-animation-duration: 1s;
+  -webkit-animation-timing-function: ease;
+  -webkit-animation-iteration-count: 3;
+  -webkit-animation-direction: normal;
+  -webkit-animation-play-state: running;
 }
 
 </style>
@@ -78,28 +130,30 @@ h1, h2, p {
   <h1 class="center">Waiting...</h1>
 </div>
 <div id="question">
-  <div class="panel button yes"><h1 class="center">Yes</h1></div>
+  <div class="panel button yes"><h1 class="center">Agree</h1></div>
   <div class="panel text">
     <h1 class="center"></h1>
   </div>
-  <div class="panel button no"><h1 class="center">No</h1></div>
+  <div class="panel button no"><h1 class="center">Disagree</h1></div>
 </div>
 <div id="prompt">
   <div class="panel text">
     <div class="center">
-      <p class="question"></p>
-      <p class="bold">You responded <span class="answer green">Yes</span></p>
-      <h2>Please explain you answer in the form of a Yes/No question:</h2>
+      <h2 class="question"></h2>
+      <p class="bold">You responded <span class="answer yes">Agree</span></p>
+      <p>Please provide a statement that explains your answer.</p>
     </div>
   </div>
   <div class="panel"><textarea></textarea></div>
   <div class="panel button submit"><h1 class="center white">Submit</h1></div>
 </div>
+<div class="counter"></div>
 <script>
 
 (function() {
 
   let userId = -1
+  let counter = -1;
 
   /*
   function randomText() {
@@ -129,19 +183,20 @@ h1, h2, p {
   }
 
   function showPrompt(txt, ans) {
+    document.querySelector('textarea').value = ''
     document.querySelector('#instruction').style.display = 'none' 
     document.querySelector('#prompt').style.display = 'block' 
     document.querySelector('#question').style.display = 'none' 
 
     document.querySelector('#prompt .question').innerHTML = txt
     if(ans) {
-      document.querySelector('#prompt .answer').innerHTML = 'Yes' 
-      document.querySelector('#prompt .answer').classList.remove('red') 
-      document.querySelector('#prompt .answer').classList.add('green') 
+      document.querySelector('#prompt .answer').innerHTML = 'Agree' 
+      document.querySelector('#prompt .answer').classList.remove('no') 
+      document.querySelector('#prompt .answer').classList.add('yes') 
     } else {
-      document.querySelector('#prompt .answer').innerHTML = 'No' 
-      document.querySelector('#prompt .answer').classList.remove('green') 
-      document.querySelector('#prompt .answer').classList.add('red') 
+      document.querySelector('#prompt .answer').innerHTML = 'Disagree'
+      document.querySelector('#prompt .answer').classList.remove('yes') 
+      document.querySelector('#prompt .answer').classList.add('no') 
     }
   }
 
@@ -152,9 +207,18 @@ h1, h2, p {
     ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: val }))
   }
 
+  function startCounter(t) {
+    counter = t 
+    document.querySelector('.counter').style.display = 'block'
+  }
+
+  function stopTimer() {
+    document.querySelector('.counter').style.display = 'none'
+  }
+
   // Websocket stuff - JBG
 
-  const ws = new WebSocket('ws://localhost:8000')
+  const ws = new WebSocket('ws://peerparty.org:8000')
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
@@ -162,6 +226,7 @@ h1, h2, p {
   }
 
   ws.onclose = function(e) {
+    stopTimer()
     console.log('Websocket closed.')
   }
 
@@ -182,15 +247,25 @@ h1, h2, p {
         console.log('User id: ' + userId )
         break
       case 'QUESTION':
+        startCounter(15)
         console.log('Question is: ' + res['txt'])
         showQuestion(res['txt'])
         break
       case 'PROMPT':
+        startCounter(90)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
         break
+      case 'ANSWERS':
+        startCounter(15)
+        showInstruction("Waiting...")
+        break
       case 'DONE':
+        stopTimer()
         showInstruction("Done!")
+        document.querySelector('#instruction').classList.remove('no')
+        document.querySelector('#instruction').classList.remove('yes')
+        document.querySelector('#instruction').classList.add('done')
         break
       default:
         console.log('Unknown CMD: ' + cmd)
@@ -199,16 +274,24 @@ h1, h2, p {
   }
 
   document.querySelector('#question .yes').addEventListener('click', (e) => {
+    document.querySelector('#instruction').classList.add('ubermate') 
+    document.querySelector('#instruction').classList.remove('no')
+    document.querySelector('#instruction').classList.add('yes')
     answerQuestion(true)
   })
 
   document.querySelector('#question .no').addEventListener('click', (e) => {
+    document.querySelector('#instruction').classList.add('ubermate') 
+    document.querySelector('#instruction').classList.remove('yes')
+    document.querySelector('#instruction').classList.add('no')
     answerQuestion(false)
   })
 
   document.querySelector('#prompt .submit').addEventListener('click', (e) => {
     submitPrompt(document.querySelector('textarea').value)
   })
+
+  setInterval(() => document.querySelector('.counter').innerHTML = --counter, 1000)
 
 })()
 </script>
