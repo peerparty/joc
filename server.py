@@ -15,7 +15,7 @@ from anytree import Node, RenderTree, LevelOrderGroupIter, LevelOrderIter, PostO
 from enum import Enum
 
 # Used for testing - JBG
-test = True
+test = False 
 user_time = 1
 test_ans = [True, False, True, False, True, True, False, False, False, True, False, True, False, True, False, True, False, False, True, True, True, False, True, True, True, True, True, True, False, True, False, True, False, False, True, False, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
 test_count = 0
