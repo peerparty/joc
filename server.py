@@ -143,14 +143,36 @@ class ConsensusServer:
             payload = { 'cmd': 'DONE' }
             user.ws.sendMessage(json.dumps(payload))
 
-    def collect_answers(self):
-        print("collect_answers")
+    def test_answer(self, user):
+        global test_count
+        global test_ans
+        global test_input
+        time.sleep(random.randint(1, user_time))
+        ans = False if ques_count > 100 else random.randint(0,1) == 1
+        q.add_answer(Answer(user, ans))
+        test_input.append(ans)
+        test_count += 1 
 
+    def test_answers(self):
+        for user_id, user in self.users.items():
+            user_thread = threading.Thread(target=answer_question, args=(user,))
+            #user_thread.daemon = True
+            user_thread.start()
+
+    def broadcast_questions(self):
         for user_id, user in self.users.items():
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
                 payload = { 'cmd': 'QUESTION', 'txt': user.q.name }
                 user.ws.sendMessage(json.dumps(payload))
+
+    def collect_answers(self):
+        print("collect_answers")
+        global test
+        if test:
+            self.test_answers()
+        else:
+            self.broacast_questions()
 
         t = threading.Timer(self.round_time, self.close_answers)
         t.start()
@@ -159,14 +181,32 @@ class ConsensusServer:
         print("close_prompts")
         self.collect_answers()
 
-    def collect_prompts(self):
-        print("collect_prompts")
-
+    def broadcast_prompts(self):
         for user_id, user in self.users.items():
             if len(user.prompts) > 0:
                 user.p = user.prompts.pop(0)
                 payload = { 'cmd': 'PROMPT', 'txt': user.p.ques.name, 'ans': user.p.ans.val }
                 user.ws.sendMessage(json.dumps(payload))
+
+    def test_prompt(self, user):
+        if len(user.prompts) > 0:
+            p = user.prompts.pop(0)
+            time.sleep(random.randint(1, user_time))
+            p.ques.add_question(str(ques_count))
+
+    def test_prompts(self):
+        for user in users:
+            user_thread = threading.Thread(target=create_question, args=(user,))
+            #user_thread.daemon = True
+            user_thread.start()
+
+    def collect_prompts(self):
+        print("collect_prompts")
+        global test
+        if test:
+            self.test_prompts()
+        else:
+            self.broadcast_prompts()
 
         t = threading.Timer(self.round_time, self.close_prompts)
         t.start()
