@@ -69,7 +69,7 @@ class Question(Node):
 class ConsensusServer:
     def __init__(self):
         self.answer_time = 15 
-        self.prompt_time = 30 
+        self.prompt_time = 90 
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
@@ -100,7 +100,8 @@ class ConsensusServer:
         sibs = self.get_siblings(question)
         sibs = list(filter(lambda q : not q.state == QuestionState.REASKED, sibs))
         print("SIBS %s" % [node.name for node in sibs])
-        if len(sibs) > 1 and reduce(lambda a, q : q.check_consensus() and a, sibs, True):
+        #if len(sibs) > 1 and reduce(lambda a, q : q.check_consensus() and a, sibs, True):
+        if reduce(lambda a, q : q.check_consensus() and a, sibs, True):
             parent = question.parent
             if not parent.state == QuestionState.REASKED:
                 print("the reask %s %s" % (parent.name, parent.state))
@@ -110,22 +111,35 @@ class ConsensusServer:
     def create_prompt(self, question, ans):
         ans.user.prompts.append(Prompt(question, ans))
 
+    def open_questions(self, questions):
+        for question in questions:
+            if not question.check_consensus():
+                print("no consensus %s" % question.name)
+                question.state = QuestionState.PROMPTED 
+                for ans in question.answers:
+                    self.create_prompt(question, ans)
+            else:
+                print("omg consensus %s" % question.name)
+                question.state = QuestionState.CLOSED 
+                self.sibling_consensus(question)
+
+    def hanging_prompts(self, questions):
+        for question in questions:
+            question.state = QuestionState.REASKED 
+            self.add_question(question.name, parent=question.parent)
+
     def close_answers(self):
         q_size = reduce(lambda c, user : c + len(user.questions), list(self.users.values()), 0)
         if(q_size > 0):
             self.collect_answers()
         else:
             questions = list(filter(lambda n : n.state == QuestionState.OPEN, [node for node in PostOrderIter(self.root)]))
-            for question in questions:
-                if not question.check_consensus():
-                    print("no consensus %s" % question.name)
-                    question.state = QuestionState.PROMPTED 
-                    for ans in question.answers:
-                        self.create_prompt(question, ans)
-                else:
-                    print("omg consensus %s" % question.name)
-                    question.state = QuestionState.CLOSED 
-                    self.sibling_consensus(question)
+            if len(questions) > 0:
+                self.open_questions(questions)
+            else:
+                questions = list(filter(lambda n : n.state == QuestionState.PROMPTED, [node for node in PostOrderIter(self.root)]))
+                self.hanging_prompts(questions)
+
             self.print_root()
             self.print_users()
 
@@ -151,6 +165,8 @@ class ConsensusServer:
         print("collect_answers")
 
         for user_id, user in self.users.items():
+            payload = { 'cmd': 'ANSWERS' }
+            user.ws.sendMessage(json.dumps(payload))
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
                 payload = { 'cmd': 'QUESTION', 'txt': user.q.name }

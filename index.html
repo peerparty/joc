@@ -27,16 +27,24 @@ textarea {
   font-size: 32px; 
 }
 
+h1 {
+  font-size: 89px;
+}
+
 h1, h2, p {
   text-align: center;
   width: 100%;
+}
+
+h2, p {
+  font-size: 34px;
 }
 
 .counter {
   position: absolute;
   top: 0px;
   left: 0px;
-  font-size: 32px;
+  font-size: 55px;
   display: none;
 }
 
@@ -122,18 +130,18 @@ h1, h2, p {
   <h1 class="center">Waiting...</h1>
 </div>
 <div id="question">
-  <div class="panel button yes"><h1 class="center">Yes</h1></div>
+  <div class="panel button yes"><h1 class="center">Agree</h1></div>
   <div class="panel text">
     <h1 class="center"></h1>
   </div>
-  <div class="panel button no"><h1 class="center">No</h1></div>
+  <div class="panel button no"><h1 class="center">Disagree</h1></div>
 </div>
 <div id="prompt">
   <div class="panel text">
     <div class="center">
       <h2 class="question"></h2>
-      <p class="bold">You responded <span class="answer yes">Yes</span></p>
-      <p>Please explain you answer in the form of a Yes/No question:</p>
+      <p class="bold">You responded <span class="answer yes">Agree</span></p>
+      <p>Please provide a statement that explains your answer.</p>
     </div>
   </div>
   <div class="panel"><textarea></textarea></div>
@@ -175,17 +183,18 @@ h1, h2, p {
   }
 
   function showPrompt(txt, ans) {
+    document.querySelector('textarea').value = ''
     document.querySelector('#instruction').style.display = 'none' 
     document.querySelector('#prompt').style.display = 'block' 
     document.querySelector('#question').style.display = 'none' 
 
     document.querySelector('#prompt .question').innerHTML = txt
     if(ans) {
-      document.querySelector('#prompt .answer').innerHTML = 'Yes' 
+      document.querySelector('#prompt .answer').innerHTML = 'Agree' 
       document.querySelector('#prompt .answer').classList.remove('no') 
       document.querySelector('#prompt .answer').classList.add('yes') 
     } else {
-      document.querySelector('#prompt .answer').innerHTML = 'No' 
+      document.querySelector('#prompt .answer').innerHTML = 'Disagree'
       document.querySelector('#prompt .answer').classList.remove('yes') 
       document.querySelector('#prompt .answer').classList.add('no') 
     }
@@ -243,9 +252,13 @@ h1, h2, p {
         showQuestion(res['txt'])
         break
       case 'PROMPT':
-        startCounter(30)
+        startCounter(90)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
+        break
+      case 'ANSWERS':
+        startCounter(15)
+        showInstruction("Waiting...")
         break
       case 'DONE':
         stopTimer()
