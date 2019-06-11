@@ -6,6 +6,7 @@ import string
 import time
 import threading
 import json
+import sys
 
 import hs 
 import ws
@@ -70,7 +71,7 @@ class Question(Node):
         count_no = 0
         
         for answer in self.answers:
-            print("check consensus " + str(answer.val))
+            #print("check consensus " + str(answer.val))
             if answer.val:
                 count_yes += 1
             else:
@@ -82,10 +83,10 @@ class Question(Node):
 
 class ConsensusServer:
     def __init__(self):
-        #self.answer_time = 15 
-        #self.prompt_time = 90 
-        self.answer_time = 2 
-        self.prompt_time = 2 
+        self.answer_time = 15 
+        self.prompt_time = 60 
+        #self.answer_time = 2 
+        #self.prompt_time = 2 
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
@@ -101,10 +102,13 @@ class ConsensusServer:
     def answer_response(self, user_id, ans):
         user = self.users[user_id]
         user.q.add_answer(Answer(user, ans))
+        self.print_root()
 
     def prompt_response(self, user_id, prompt):
-       user = self.users[user_id]
-       self.add_question(prompt, user.p.ques)
+        user = self.users[user_id]
+        if len(prompt) > 0: 
+            self.add_question(prompt, user.p.ques)
+        self.print_root()
 
     def get_height(self):
         return len([[node for node in children]
@@ -117,7 +121,7 @@ class ConsensusServer:
         sibs = self.get_siblings(question)
         sibs = list(filter(lambda q : not q.state == QuestionState.REASKED,
             sibs))
-        print("SIBS %s" % [node.name for node in sibs])
+        #print("SIBS %s" % [node.name for node in sibs])
         #if len(sibs) > 1 and reduce(lambda a, q :
         #    q.check_consensus() and a, sibs, True):
         if reduce(lambda a, q : q.check_consensus() and a, sibs, True):
@@ -125,7 +129,7 @@ class ConsensusServer:
             if parent == self.root:
                 print("We should be done here.")
             elif not parent.state == QuestionState.REASKED:
-                print("the reask %s %s" % (parent.name, parent.state))
+                #print("the reask %s %s" % (parent.name, parent.state))
                 parent.state = QuestionState.REASKED 
                 self.add_question(parent.name, parent=parent.parent)
 
@@ -135,12 +139,12 @@ class ConsensusServer:
     def open_questions(self, questions):
         for question in questions:
             if not question.check_consensus():
-                print("no consensus %s" % question.name)
+                #print("no consensus %s" % question.name)
                 question.state = QuestionState.PROMPTED 
                 for ans in question.answers:
                     self.create_prompt(question, ans)
             else:
-                print("omg consensus %s" % question.name)
+                #print("omg consensus %s" % question.name)
                 question.state = QuestionState.CLOSED 
                 self.sibling_consensus(question)
 
@@ -166,7 +170,7 @@ class ConsensusServer:
                 self.hanging_prompts(questions)
 
             self.print_root()
-            self.print_users()
+            #self.print_users()
 
             p_size = reduce(lambda c, user : c + len(user.prompts),
                 list(self.users.values()), 0)
@@ -186,12 +190,12 @@ class ConsensusServer:
     def send_done(self):
         for user_id, user in self.users.items():
             if not test:
-                print('sending done', user_id)
+                #print('sending done', user_id)
                 payload = { 'cmd': 'DONE' }
                 user.ws.sendMessage(json.dumps(payload))
 
     def test_answer(self, user):
-        print("test_answer")
+        #print("test_answer")
         global test_count
         global test_ans
         global test_input
@@ -202,7 +206,7 @@ class ConsensusServer:
             #    else random.randint(0,1) == 1)
             ans = (False if test_count >= len(test_ans)
                 else test_ans[test_count])
-            print("User %d answered: %s on %d" % (user.id, ans, test_count))
+            #print("User %d answered: %s on %d" % (user.id, ans, test_count))
             test_count += 1 
             user.q.add_answer(Answer(user, ans))
             test_input.append(ans)
@@ -224,18 +228,18 @@ class ConsensusServer:
                 user.ws.sendMessage(json.dumps(payload))
 
     def collect_answers(self):
-        print("collect_answers")
+        #print("collect_answers")
         global test
         if test:
             self.test_answers()
         else:
-            self.broacast_questions()
+            self.broadcast_questions()
 
         t = threading.Timer(self.answer_time, self.close_answers)
         t.start()
 
     def close_prompts(self):
-        print("close_prompts")
+        #print("close_prompts")
         self.collect_answers()
 
     def broadcast_prompts(self):
@@ -250,7 +254,7 @@ class ConsensusServer:
                 user.ws.sendMessage(json.dumps(payload))
 
     def test_prompt(self, user):
-        print('test_prompt')
+        #print('test_prompt')
         if len(user.prompts) > 0:
             user.p = user.prompts.pop(0)
             time.sleep(random.randint(1, user_time))
@@ -264,7 +268,7 @@ class ConsensusServer:
             user_thread.start()
 
     def collect_prompts(self):
-        print("collect_prompts")
+        #print("collect_prompts")
         global test
         if test:
             self.test_prompts()
@@ -308,15 +312,15 @@ class ConsensusServer:
         self.users[self.user_count] = User(self.user_count, None)
         self.user_count += 1
         self.users[self.user_count] = User(self.user_count, None)
-        print("%d Test users ..." % (len(self.users)))
+        #print("%d Test users ..." % (len(self.users)))
 
     def handle_msg(self, ws):
         data = json.loads(ws.data)
-        print('handle_msg', data)
+        #print('handle_msg', data)
         cmd = data['cmd']
         if cmd == 'HELLO':
             user_id = self.add_user(ws)
-            print("created user %d" % user_id)
+            #print("created user %d" % user_id)
             ws.sendMessage(json.dumps({ 'cmd': 'USER', 'id': user_id })) 
         elif cmd == 'ANSWER':
             self.answer_response(data['id'], data['val'])
@@ -324,7 +328,7 @@ class ConsensusServer:
             self.prompt_response(data['id'], data['val'])
 
     def init_questions(self):
-        print("init_questions")
+        #print("init_questions")
         print("Enter the starting question:")
         question = input()
         self.add_question(question, parent=self.root)

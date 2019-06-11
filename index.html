@@ -28,7 +28,7 @@ textarea {
 }
 
 h1 {
-  font-size: 89px;
+  font-size: 55px;
 }
 
 h1, h2, p {
@@ -123,11 +123,38 @@ h2, p {
   -webkit-animation-play-state: running;
 }
 
+.blink {
+  -webkit-animation: blink 1s step-end infinite;
+  -moz-animation: blink 1s step-end infinite;
+  -o-animation: blink 1s step-end infinite;
+  animation: blink 1s step-end infinite;
+}
+
+@-webkit-keyframes blink {
+  67% { opacity: 0 }
+}
+
+
+@-moz-keyframes blink {
+  67% { opacity: 0 }
+}
+
+
+@-o-keyframes blink {
+  67% { opacity: 0 }
+}
+
+
+@keyframes blink {
+  67% { opacity: 0 }
+}
+
+
 </style>
 </head>
 <body>
 <div id="instruction">
-  <h1 class="center">Waiting...</h1>
+  <h1 class="center">Users are joining...</h1>
 </div>
 <div id="question">
   <div class="panel button yes"><h1 class="center">Agree</h1></div>
@@ -161,11 +188,17 @@ h2, p {
   }
   */
 
+  function speakText(txt) {
+    const msg = new SpeechSynthesisUtterance(txt)
+    window.speechSynthesis.speak(msg)
+  }
+
   function showInstruction(txt) {
     document.querySelector('#instruction').style.display = 'block' 
     document.querySelector('#prompt').style.display = 'none' 
     document.querySelector('#question').style.display = 'none' 
     document.querySelector('#instruction h1').innerHTML = txt
+    speakText(txt)
   }
 
   function showQuestion(txt) {
@@ -173,6 +206,7 @@ h2, p {
     document.querySelector('#prompt').style.display = 'none' 
     document.querySelector('#question').style.display = 'block' 
     document.querySelector('#question .text h1').innerHTML = txt
+    speakText(txt)
   }
 
   function answerQuestion(val) {
@@ -201,9 +235,7 @@ h2, p {
   }
 
   function submitPrompt(val) {
-    document.querySelector('#instruction').style.display = 'block' 
-    document.querySelector('#prompt').style.display = 'none' 
-    document.querySelector('#question').style.display = 'none' 
+    showInstruction("Someone is typing...")
     ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: val }))
   }
 
@@ -218,7 +250,7 @@ h2, p {
 
   // Websocket stuff - JBG
 
-  const ws = new WebSocket('ws://peerparty.org:8000')
+  const ws = new WebSocket('wss://ws.peerparty.org')
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
@@ -252,13 +284,13 @@ h2, p {
         showQuestion(res['txt'])
         break
       case 'PROMPT':
-        startCounter(90)
+        startCounter(60)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
         break
       case 'ANSWERS':
         startCounter(15)
-        showInstruction("Waiting...")
+        showInstruction("Waiting for everyone to make a choice...")
         break
       case 'DONE':
         stopTimer()

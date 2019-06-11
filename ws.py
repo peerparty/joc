@@ -1,6 +1,7 @@
 #!/usr/bin/env python
-from SimpleWebSocketServer import SimpleWebSocketServer, WebSocket
+from SimpleWebSocketServer import SimpleSSLWebSocketServer, WebSocket
 import json
+import ssl
 
 class WS():
   def __init__(self, handler):
@@ -8,7 +9,14 @@ class WS():
     msg_handler = handler
   
   def start(self):
-    self.server = SimpleWebSocketServer('', 8000, WSClient)
+    #self.server = SimpleWebSocketServer('', 8000, WSClient)
+    self.server = SimpleSSLWebSocketServer(
+        '',
+        8000,
+        WSClient,
+        './cert.pem',
+        './key.pem',
+        version=ssl.PROTOCOL_TLSv1)
     self.server.serveforever()
 
   def stop(self):
@@ -18,7 +26,7 @@ class WS():
 class WSClient(WebSocket):
 
   def handleMessage(self):
-    print(self.address, 'message')
+    #print(self.address, 'message')
     global msg_handler
     msg_handler(self)
 
