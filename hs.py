@@ -13,15 +13,28 @@ class HTTP():
    
 class S(BaseHTTPRequestHandler):
 
+  def _set_audio_headers(self):
+    self.send_response(200)
+    self.send_header('Content-type', 'audio/mpeg')
+    self.end_headers()
+
   def _set_headers(self):
     self.send_response(200)
     self.send_header('Content-type', 'text/html')
     self.end_headers()
 
-  def do_GET(self):
+  def _handle_audio(self):
+    self._set_audio_headers()
+    f = open('./' + self.path, 'rb')
+    try:
+      self.wfile.write(f.read())
+      f.close()
+      return
+    except IOError:
+      self.send_error(404, 'file not found')
+
+  def _handle_txt(self):
     self._set_headers()
-    if self.path == '/':
-      self.path = '/index.html'
     f = open('./' + self.path)
     try:
       self.wfile.write(f.read().encode('utf-8'))
@@ -30,6 +43,14 @@ class S(BaseHTTPRequestHandler):
     except IOError:
       self.send_error(404, 'file not found')
 
+  def do_GET(self):
+    if 'mpeg' in self.path:
+      self._handle_audio()
+    else:
+      if self.path == '/':
+        self.path = '/index.html'
+      self._handle_txt()
+      
 #  def do_POST(self):
 #    self._set_headers()
 #

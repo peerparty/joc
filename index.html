@@ -2,6 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <style>
 
 * {
@@ -28,7 +29,7 @@ textarea {
 }
 
 h1 {
-  font-size: 55px;
+  font-size: 21px;
 }
 
 h1, h2, p {
@@ -93,6 +94,7 @@ h2, p {
 
 .answer {
   font-size: 32px;
+  text-shadow: -1px -1px 0 #000,  1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
 .done {
@@ -153,8 +155,11 @@ h2, p {
 </style>
 </head>
 <body>
+<audio loop>
+  <source src="audio.mpeg" type="audio/mpeg">
+</audio>
 <div id="instruction">
-  <h1 class="center">Users are joining...</h1>
+  <h1 class="center">Tap to start audio...</h1>
 </div>
 <div id="question">
   <div class="panel button yes"><h1 class="center">Agree</h1></div>
@@ -189,8 +194,10 @@ h2, p {
   */
 
   function speakText(txt) {
+    /*
     const msg = new SpeechSynthesisUtterance(txt)
     window.speechSynthesis.speak(msg)
+    */
   }
 
   function showInstruction(txt) {
@@ -250,7 +257,7 @@ h2, p {
 
   // Websocket stuff - JBG
 
-  const ws = new WebSocket('wss://ws.peerparty.org')
+  const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
@@ -284,7 +291,7 @@ h2, p {
         showQuestion(res['txt'])
         break
       case 'PROMPT':
-        startCounter(60)
+        startCounter(30)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
         break
@@ -321,6 +328,12 @@ h2, p {
 
   document.querySelector('#prompt .submit').addEventListener('click', (e) => {
     submitPrompt(document.querySelector('textarea').value)
+  })
+
+  document.querySelector('#instruction').addEventListener('click', e => {
+    const elm = document.querySelector('audio')
+    elm.paused ? elm.play() : elm.pause()
+    showInstruction("Users joining please wait...")
   })
 
   setInterval(() => document.querySelector('.counter').innerHTML = --counter, 1000)

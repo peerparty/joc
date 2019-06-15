@@ -84,7 +84,7 @@ class Question(Node):
 class ConsensusServer:
     def __init__(self):
         self.answer_time = 15 
-        self.prompt_time = 60 
+        self.prompt_time = 30 
         #self.answer_time = 2 
         #self.prompt_time = 2 
         self.users = {} 
@@ -293,7 +293,7 @@ class ConsensusServer:
         for pre, fill, node in RenderTree(self.root):
             ans_str = ','.join(map(str,
                 [(ans.user.id, ans.val) for ans in node.answers]))
-            print("%s%s,%s %s" % (pre, node.name, self.get_emoji(node.state), ans_str))
+            print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
 
     def print_users(self):
         for user_id, user in self.users.items():
