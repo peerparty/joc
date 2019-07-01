@@ -282,7 +282,7 @@ class ConsensusServer:
         if state == QuestionState.OPEN:
             return '🙋'
         elif state == QuestionState.CLOSED:
-            return '🤗'
+            return '🌈'
         elif state == QuestionState.REASKED:
             return '↩️ '
         else:

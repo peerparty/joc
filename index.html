@@ -25,7 +25,7 @@ html, body, #question, #instruction, #prompt {
 textarea {
   height: 100%;
   width: 100%;
-  font-size: 32px; 
+  font-size: 13px; 
 }
 
 h1 {
@@ -38,7 +38,8 @@ h1, h2, p {
 }
 
 h2, p {
-  font-size: 34px;
+  font-size: 13px;
+  font-size: 3.5vw;
 }
 
 .counter {
@@ -93,7 +94,7 @@ h2, p {
 }
 
 .answer {
-  font-size: 32px;
+  font-size: 13px;
   text-shadow: -1px -1px 0 #000,  1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
 }
 
@@ -155,8 +156,11 @@ h2, p {
 </style>
 </head>
 <body>
-<audio loop>
-  <source src="audio.mpeg" type="audio/mpeg">
+<audio id="fg-audio">
+  <source src="fg.mpeg" type="audio/mpeg">
+</audio>
+<audio id="bg-audio" loop>
+  <source src="bg.mpeg" type="audio/mpeg">
 </audio>
 <div id="instruction">
   <h1 class="center">Tap to start audio...</h1>
@@ -192,6 +196,12 @@ h2, p {
     return Math.random().toString(36).substring(7)
   }
   */
+
+  function buttonAudio() {
+    //const elm = document.querySelector('#fg-audio')
+    var audio = new Audio('fg.mpeg')
+    audio.play()
+  }
 
   function speakText(txt) {
     /*
@@ -242,6 +252,7 @@ h2, p {
   }
 
   function submitPrompt(val) {
+    buttonAudio()
     showInstruction("Someone is typing...")
     ws.send(JSON.stringify({ cmd: 'PROMPT', id: userId, val: val }))
   }
@@ -316,6 +327,7 @@ h2, p {
     document.querySelector('#instruction').classList.add('ubermate') 
     document.querySelector('#instruction').classList.remove('no')
     document.querySelector('#instruction').classList.add('yes')
+    buttonAudio()
     answerQuestion(true)
   })
 
@@ -323,6 +335,7 @@ h2, p {
     document.querySelector('#instruction').classList.add('ubermate') 
     document.querySelector('#instruction').classList.remove('yes')
     document.querySelector('#instruction').classList.add('no')
+    buttonAudio()
     answerQuestion(false)
   })
 
@@ -331,7 +344,7 @@ h2, p {
   })
 
   document.querySelector('#instruction').addEventListener('click', e => {
-    const elm = document.querySelector('audio')
+    const elm = document.querySelector('#bg-audio')
     elm.paused ? elm.play() : elm.pause()
     showInstruction("Users joining please wait...")
   })
