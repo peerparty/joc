@@ -14,7 +14,7 @@ You will prompted to enter a statement on which to look for moments of concensus
 
     Enter the starting question: <THE STATEMENT>
 
-For example: "Should friends who fly be shamed."
+For example: "Friends who fly be shamed."
 
 ## Notes
 
