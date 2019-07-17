@@ -49,6 +49,8 @@ class S(BaseHTTPRequestHandler):
     else:
       if self.path == '/':
         self.path = '/index.html'
+      elif self.path == '/admin':
+        self.path = '/admin.html'
       self._handle_txt()
       
 #  def do_POST(self):

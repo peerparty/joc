@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+</style>
+</head>
+<body>
+
+<div id="create">Create</div>
+<textarea></textarea>
+<div id="start">Start</div>
+
+<script>
+
+(function() {
+
+  let serverId = -1
+
+  // Websocket stuff - JBG
+
+  const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
+
+  ws.onopen = function(e) {
+    console.log('Websocket open.')
+  }
+
+  ws.onclose = function(e) {
+    console.log('Websocket closed.')
+  }
+
+  ws.onerror = function(e) {
+    console.log('Websocket errored.')
+  }
+
+  ws.onmessage = function(e) {
+    console.log(e.data)
+    const res = JSON.parse(e.data)
+    const cmd = res['cmd']
+    switch(cmd) {
+      case 'ADMIN_SERVER_CREATED':
+        serverId = res['id']
+        console.log('SERVER ID:', serverId)
+        break
+      default:
+        console.log('Unknown CMD: ' + cmd)
+        break
+    }
+  }
+
+  document.querySelector('#create').addEventListener('click', (e) => {
+    ws.send(JSON.stringify({ cmd: 'ADMIN_CREATE' }))
+  })
+
+  document.querySelector('#start').addEventListener('click', (e) => {
+    ws.send(JSON.stringify({
+      cmd: 'ADMIN_START',
+      id: serverId,
+      val: document.querySelector('textarea').value
+    }))
+  })
+
+})()
+</script>
+</body>
+</html>
+
+
