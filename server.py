@@ -15,13 +15,6 @@ from functools import reduce
 from anytree import Node, RenderTree, LevelOrderGroupIter, LevelOrderIter, PostOrderIter
 from enum import Enum
 
-# Used for testing - JBG
-test = False 
-user_time = 1
-test_ans = [True, False, True, False, True, True, False, False, False, True, False, True, False, True, False, True, False, False, True, True, True, False, True, True, True, True, True, True, False, True, False, True, False, False, True, False, True, True, True, False, False, False, False, False, False, False, False, False, False, False, False, False, False, False]
-test_count = 0
-test_input = []
-
 def random_txt():
   return ''.join(
       random.choice(string.ascii_uppercase + string.digits)
@@ -87,6 +80,9 @@ class ConsensusServer:
         self.prompt_time = 30 
         #self.answer_time = 2 
         #self.prompt_time = 2 
+        self.reset()
+
+    def reset(self):
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
@@ -189,34 +185,9 @@ class ConsensusServer:
 
     def send_done(self):
         for user_id, user in self.users.items():
-            if not test:
-                #print('sending done', user_id)
-                payload = { 'cmd': 'DONE' }
-                user.ws.sendMessage(json.dumps(payload))
-
-    def test_answer(self, user):
-        #print("test_answer")
-        global test_count
-        global test_ans
-        global test_input
-        if len(user.questions) > 0:
-            user.q = user.questions.pop(0)
-            time.sleep(random.randint(1, user_time))
-            #ans = (False if self.ques_count > 100
-            #    else random.randint(0,1) == 1)
-            ans = (False if test_count >= len(test_ans)
-                else test_ans[test_count])
-            #print("User %d answered: %s on %d" % (user.id, ans, test_count))
-            test_count += 1 
-            user.q.add_answer(Answer(user, ans))
-            test_input.append(ans)
-
-    def test_answers(self):
-        for user_id, user in self.users.items():
-            user_thread = threading.Thread(target=self.test_answer,
-                args=(user,))
-            #user_thread.daemon = True
-            user_thread.start()
+            #print('sending done', user_id)
+            payload = { 'cmd': 'DONE' }
+            user.ws.sendMessage(json.dumps(payload))
 
     def broadcast_questions(self):
         for user_id, user in self.users.items():
@@ -229,12 +200,7 @@ class ConsensusServer:
 
     def collect_answers(self):
         #print("collect_answers")
-        global test
-        if test:
-            self.test_answers()
-        else:
-            self.broadcast_questions()
-
+        self.broadcast_questions()
         t = threading.Timer(self.answer_time, self.close_answers)
         t.start()
 
@@ -253,27 +219,9 @@ class ConsensusServer:
                 }
                 user.ws.sendMessage(json.dumps(payload))
 
-    def test_prompt(self, user):
-        #print('test_prompt')
-        if len(user.prompts) > 0:
-            user.p = user.prompts.pop(0)
-            time.sleep(random.randint(1, user_time))
-            self.add_question(random_txt(), user.p.ques)
-
-    def test_prompts(self):
-        for user_id, user in self.users.items():
-            user_thread = threading.Thread(target=self.test_prompt,
-                args=(user,))
-            #user_thread.daemon = True
-            user_thread.start()
-
     def collect_prompts(self):
         #print("collect_prompts")
-        global test
-        if test:
-            self.test_prompts()
-        else:
-            self.broadcast_prompts()
+        self.broadcast_prompts()
 
         t = threading.Timer(self.prompt_time, self.close_prompts)
         t.start()
@@ -287,7 +235,6 @@ class ConsensusServer:
             return '↩️ '
         else:
             return '🤔'
-        
 
     def print_root(self):
         for pre, fill, node in RenderTree(self.root):
@@ -306,13 +253,6 @@ class ConsensusServer:
         self.user_count += 1 
         self.users[self.user_count] = User(self.user_count, ws)
         return self.user_count
-
-    def test_users(self):
-        self.user_count += 1
-        self.users[self.user_count] = User(self.user_count, None)
-        self.user_count += 1
-        self.users[self.user_count] = User(self.user_count, None)
-        #print("%d Test users ..." % (len(self.users)))
 
     def handle_msg(self, ws):
         data = json.loads(ws.data)
@@ -337,8 +277,6 @@ class ConsensusServer:
         self.collect_answers()
 
     def start(self):
-        if test:
-          self.test_users()
         self.init_questions()
         #t = threading.Timer(self.round_time, self.init_questions)
         #t.start()
