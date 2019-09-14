@@ -20,7 +20,8 @@
 
   // Websocket stuff - JBG
 
-  const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
+  //const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
+  const ws = new WebSocket('ws://localhost:8000/')
 
   ws.onopen = function(e) {
     console.log('Websocket open.')

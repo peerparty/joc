@@ -1,6 +1,7 @@
 from functools import reduce
 from anytree import Node, RenderTree, LevelOrderGroupIter, LevelOrderIter, PostOrderIter
-from enum import Enum
+from anytree.exporter import DictExporter
+from enum import IntEnum
 
 import random
 import string
@@ -26,7 +27,7 @@ class Answer:
         self.user = user
         self.val = val
 
-class QuestionState(Enum):
+class QuestionState(IntEnum):
     OPEN = 1 
     CLOSED = 2 
     REASKED = 3 
@@ -63,15 +64,19 @@ class Question(Node):
         )
 
 class ConsensusServer:
-    def __init__(self):
+    def __init__(self, cm):
         self.answer_time = 15 
         self.prompt_time = 30 
+        self.session_time = 600 
         #self.answer_time = 2 
         #self.prompt_time = 2 
         self.users = {} 
         self.user_count = 0
         self.ques_count = 0
+        self.consensus_stmts = []
         self.root = Question("Root", id=self.ques_count)
+
+        self.cm = cm
 
     def add_question(self, txt, parent):
         self.ques_count += 1
@@ -126,13 +131,21 @@ class ConsensusServer:
                     self.create_prompt(question, ans)
             else:
                 #print("omg consensus %s" % question.name)
+                self.consensus_stmts.append(question.name)
+                self.cm.send_consensus(question.name)
                 question.state = QuestionState.CLOSED 
                 self.sibling_consensus(question)
+                self.cm.screencast({ 'cmd': 'SCREEN_CONSENSUS', 'data': question.name })
 
     def hanging_prompts(self, questions):
         for question in questions:
             question.state = QuestionState.REASKED 
-            self.add_question(question.name, parent=question.parent)
+
+            # Requires more testing this one - JBG
+            if question.parent:
+                self.add_question(question.name, parent=question.parent)
+            #else:
+            #    self.send_done()
 
     def close_answers(self):
         q_size = reduce(lambda c, user : c + len(user.questions),
@@ -171,16 +184,17 @@ class ConsensusServer:
     def send_done(self):
         for user_id, user in self.users.items():
             #print('sending done', user_id)
-            payload = { 'cmd': 'DONE' }
+            payload = { 'cmd': 'USER_DONE', 'data': self.consensus_stmts }
             user.ws.sendMessage(json.dumps(payload))
+        self.cm.next_round()
 
     def broadcast_questions(self):
         for user_id, user in self.users.items():
-            payload = { 'cmd': 'ANSWERS' }
+            payload = { 'cmd': 'USER_ANSWERS' }
             user.ws.sendMessage(json.dumps(payload))
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
-                payload = { 'cmd': 'QUESTION', 'txt': user.q.name }
+                payload = { 'cmd': 'USER_QUESTION', 'txt': user.q.name }
                 user.ws.sendMessage(json.dumps(payload))
 
     def collect_answers(self):
@@ -198,7 +212,7 @@ class ConsensusServer:
             if len(user.prompts) > 0:
                 user.p = user.prompts.pop(0)
                 payload = {
-                    'cmd': 'PROMPT',
+                    'cmd': 'USER_PROMPT',
                     'txt': user.p.ques.name,
                     'ans': user.p.ans.val
                 }
@@ -226,6 +240,11 @@ class ConsensusServer:
             ans_str = ','.join(map(str,
                 [(ans.user.id, ans.val) for ans in node.answers]))
             print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
+        exporter = DictExporter()
+        self.cm.screencast({
+            'cmd': 'SCREEN_TREE',
+            'data': exporter.export(self.root)
+        })
 
     def print_users(self):
         for user_id, user in self.users.items():
@@ -237,13 +256,43 @@ class ConsensusServer:
     def add_user(self, ws):
         self.user_count += 1 
         self.users[self.user_count] = User(self.user_count, ws)
+        if self.user_count > 1:
+          self.broadcast_new_user()
         return self.user_count
+
+    def broadcast_new_user(self):
+        self.user_responses = {} 
+        for user_id, user in self.users.items():
+            payload = {
+                'cmd': 'USER_JOIN',
+                'count': len(self.users)
+            }
+            user.ws.sendMessage(json.dumps(payload))
+    
+    def check_start(self, user_id, val):
+        self.user_responses[user_id] = val
+        if (len(self.user_responses) == len(self.users) and
+            sum(self.user_responses.values()) == len(self.users)):
+            self.cm.start_cs()
+        
+    def end_session(self): 
+        self.send_done()
 
     def start(self, stmt):
         #print("init_questions")
         #print("Enter the starting question:")
         #question = input()
-        self.add_question(stmt, parent=self.root)
-        self.print_root()
-        self.collect_answers()
+        if len(self.users) > 1:        
+          self.add_question(stmt, parent=self.root)
+          self.print_root()
+          self.collect_answers()
+        else:
+          for user_id, user in self.users.items():
+            payload = { 'cmd': 'USER_NOT_ENOUGH' }
+            user.ws.sendMessage(json.dumps(payload))
+          self.cm.not_enough()
+
+        #t = threading.Timer(self.session_time, self.end_session)
+        #t.start()
+
 

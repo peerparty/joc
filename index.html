@@ -186,6 +186,9 @@ h2, p {
 <div class="counter"></div>
 <script>
 
+// TODO: REMOVE ME - JBG
+let sr
+
 (function() {
 
   let serverId = -1
@@ -217,7 +220,7 @@ h2, p {
     document.querySelector('#prompt').style.display = 'none' 
     document.querySelector('#question').style.display = 'none' 
     ws.send(JSON.stringify({
-      cmd: 'ANSWER',
+      cmd: 'USER_ANSWER',
       id: userId,
       server_id: serverId,
       val: val
@@ -246,12 +249,24 @@ h2, p {
     buttonAudio()
     showInstruction("Someone is typing...")
     ws.send(JSON.stringify({
-      cmd: 'PROMPT',
+      cmd: 'USER_PROMPT',
       id: userId,
       server_id: serverId,
       val: val
     }))
   }
+
+  function sendResponse(val) {
+    ws.send(JSON.stringify({
+      cmd: 'USER_RESPONSE',
+      id: userId,
+      server_id: serverId,
+      val: val
+    }))
+  }
+
+  // TODO: REMOVE ME - JBG
+  sr = sendResponse
 
   function startCounter(t) {
     counter = t 
@@ -264,11 +279,12 @@ h2, p {
 
   // Websocket stuff - JBG
 
-  const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
+  //const ws = new WebSocket('wss://winwin.peerparty.org/ws/')
+  const ws = new WebSocket('ws://localhost:8000/')
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
-    ws.send(JSON.stringify({ cmd: 'HELLO' }))
+    ws.send(JSON.stringify({ cmd: 'USER_HELLO' }))
   }
 
   ws.onclose = function(e) {
@@ -285,34 +301,35 @@ h2, p {
     const res = JSON.parse(e.data)
     const cmd = res['cmd']
     switch(cmd) {
-      case 'PONG':
-        console.log('Server is there.')
-        break
       case 'USER':
         userId = res['id']
         serverId = res['server_id']
         console.log('User id: ' + userId )
         break
-      case 'QUESTION':
+      case 'USER_QUESTION':
         startCounter(15)
         console.log('Question is: ' + res['txt'])
         showQuestion(res['txt'])
         break
-      case 'PROMPT':
+      case 'USER_PROMPT':
         startCounter(30)
         console.log('Prompt for question: ' + res['txt'])
         showPrompt(res['txt'], res['ans'])
         break
-      case 'ANSWERS':
+      case 'USER_ANSWERS':
         startCounter(15)
         showInstruction("Waiting for everyone to make a choice...")
         break
-      case 'DONE':
+      case 'USER_DONE':
         stopTimer()
         showInstruction("Done!")
         document.querySelector('#instruction').classList.remove('no')
         document.querySelector('#instruction').classList.remove('yes')
         document.querySelector('#instruction').classList.add('done')
+        break
+      case 'USER_JOIN':
+        // Ask user if they would like to force start - JBG
+        showInstruction("There are enough users to begin, shall we start?")
         break
       default:
         console.log('Unknown CMD: ' + cmd)
