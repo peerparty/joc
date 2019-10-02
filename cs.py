@@ -188,6 +188,11 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
         self.cm.next_round()
 
+    def broadcast_tutorial(self):
+        for user_id, user in self.users.items():
+            payload = { 'cmd': 'USER_TUTORIAL' }
+            user.ws.sendMessage(json.dumps(payload))
+
     def broadcast_questions(self):
         for user_id, user in self.users.items():
             payload = { 'cmd': 'USER_ANSWERS' }

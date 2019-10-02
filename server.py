@@ -22,6 +22,7 @@ class TreeEncoder(json.JSONEncoder):
 class ConsensusManager:
     def __init__(self):
         self.join_time = 120
+        self.tutorial_time = 31 
         self.servers = {}
         self.last_server_id = -1
         self.server_count = 0
@@ -96,13 +97,19 @@ class ConsensusManager:
             'id': self.last_server_id
         }))
 
+    def start_session(self):
+        #cs.start(data['val'])
+        cs = self.servers[self.last_server_id]  
+        cs.start("Foobar.")
+        #self.screencast({ 'cmd': 'SCREEN_START' })
+
     def start_cs(self):
         if not self.running:
             self.running = True
             cs = self.servers[self.last_server_id]  
-            #cs.start(data['val'])
-            cs.start("Foobar.")
-            #self.screencast({ 'cmd': 'SCREEN_START' })
+            cs.broadcast_tutorial()
+            t = threading.Timer(self.tutorial_time, self.start_session)
+            t.start()
 
     def screencast(self, payload):
         for ws in self.screens:
@@ -146,10 +153,10 @@ def main():
         ws_thread.start()
 
         http_server = hs.HTTP()
-        #http_thread = threading.Thread(target=http_server.start)
-        #http_thread.daemon = True
-        #http_thread.start()
-        http_server.start()
+        http_thread = threading.Thread(target=http_server.start)
+        http_thread.daemon = True
+        http_thread.start()
+        #http_server.start()
 
     except KeyboardInterrupt:
         print("^C received, shutting down server")
