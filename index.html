@@ -3,279 +3,300 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<style>
-
-* {
-  margin: 0;
-}
-
-html, body, #question, #instruction, #prompt {
-  height: 100%;
-}
-
-#question {
-  display: none;
-}
-
-#prompt {
-  display: none;
-  height: 100vh;
-}
-
-textarea {
-  height: 100%;
-  width: 100%;
-  font-size: 13px; 
-}
-
-h1 {
-  font-size: 21px;
-}
-
-h1, h2, p {
-  text-align: center;
-  width: 100%;
-}
-
-h2, p {
-  font-size: 13px;
-  font-size: 3.5vw;
-}
-
-.counter {
-  position: absolute;
-  top: 0px;
-  left: 0px;
-  font-size: 55px;
-  display: none;
-}
-
-.center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.panel {
-  position: relative;
-  height: 33%;
-}
-
-.submit {
-  background-color: #83c8f9;
-}
-
-.bold {
-  font-weight: bold;
-}
-
-.yes {
-  color: #ff69b4;
-}
-
-.no {
-  color: #ffff00;
-}
-
-.button.yes, #instruction.yes {
-  background-color: #ff69b4;
-  color: #000;
-}
-
-.button.no, #instruction.no {
-  background-color: #ffff00;
-  color: #000;
-}
-
-
-.white {
-  color: #fff;
-}
-
-.answer {
-  font-size: 13px;
-  text-shadow: -1px -1px 0 #000,  1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-}
-
-.done {
-  background-color: #83c8f9;
-}
-
-@keyframes uber {
-  0% { background: #83c8f9; }
-  25% { background: #ffff00; }
-  50% { background: #ff69b4; }
-  75% { background: #000; }
-  100% { background: #fff; }
-}
-
-.ubermate {
-  animation-name: uber;
-  animation-duration: 1s;
-  animation-timing-function: ease;
-  animation-iteration-count: 3;
-  animation-direction: normal;
-  animation-play-state: running;
-
-  -webkit-animation-name: uber;
-  -webkit-animation-duration: 1s;
-  -webkit-animation-timing-function: ease;
-  -webkit-animation-iteration-count: 3;
-  -webkit-animation-direction: normal;
-  -webkit-animation-play-state: running;
-}
-
-.blink {
-  -webkit-animation: blink 1s step-end infinite;
-  -moz-animation: blink 1s step-end infinite;
-  -o-animation: blink 1s step-end infinite;
-  animation: blink 1s step-end infinite;
-}
-
-@-webkit-keyframes blink {
-  67% { opacity: 0 }
-}
-
-
-@-moz-keyframes blink {
-  67% { opacity: 0 }
-}
-
-
-@-o-keyframes blink {
-  67% { opacity: 0 }
-}
-
-
-@keyframes blink {
-  67% { opacity: 0 }
-}
-
-
-</style>
+<link rel="stylesheet" type="text/css" href="css/fonts.css">
+<link rel="stylesheet" type="text/css" href="css/dots.css">
+<link rel="stylesheet" type="text/css" href="css/index.css">
 </head>
 <body>
+
 <audio id="fg-audio">
   <source src="fg.mpeg" type="audio/mpeg">
 </audio>
 <audio id="bg-audio" loop>
   <source src="bg.mpeg" type="audio/mpeg">
 </audio>
-<div id="instruction">
-  <h1 class="center">Tap to start audio...</h1>
-</div>
-<div id="question">
-  <div class="panel button yes"><h1 class="center">Agree</h1></div>
-  <div class="panel text">
-    <h1 class="center"></h1>
+
+<div class="content">
+
+  <!-- Welcome -->
+  <div id="welcome" class="screen container">
+    <div class="swipeable">
+      <div class="panel">
+        <h1>welcome to</h1>
+      </div>
+      <div class="panel">
+        <h1>winwin zone</h1>
+      </div>
+      <div class="panel">
+        <h1>Join Next session</h1>
+        <div class="vcenter">
+          <img class="img-swipe" src="imgs/swipe_agree_pink.png">
+        </div>
+        <h1>swipe right to join</h1>
+      </div>        
+    </div>
+    <div class="swipeable"><h1>Joining...</h1></div>
   </div>
-  <div class="panel button no"><h1 class="center">Disagree</h1></div>
-</div>
-<div id="prompt">
-  <div class="panel text">
-    <div class="center">
-      <h2 class="question"></h2>
-      <p class="bold">You responded <span class="answer yes">Agree</span></p>
-      <p>Please provide a statement that explains your answer.</p>
+
+  <!-- Until next session -->
+  <div id="til" class="screen">
+    <div class="panel"><h1>Until next session</h1></div>
+    <div class="panel"><h1 class="counter">00:00</h1></div>
+    <div class="panel">
+      <h1>Your spot is</h1>
+      <!-- <div class="dots bluedot vcenter"><span></span></div> -->
+    </div>
+    <div class="panel">
+      <h1>at the WINWIN.zone</h1>
+    </div>
+  </div>  
+
+  <!-- Tutorial -->
+  <div id="tutorial" class="screen vcenter">
+    <div class="panel"><img class="tutorial" src="tutorial.gif" height="600px"><h1></h1></div>
+  </div>
+
+  <!-- Ready -->
+  <div id="ready" class="screen container">
+    <div class="swipeable"><h1>Disagree</h1></div>
+    <div class="swipeable">
+      <div class="panel">
+        <h1>You are with</h1>
+        <h1>3 people</h1>
+        <h1>Do you want to start?</h1>
+      </div>
+      <div class="panel">
+        <div class="vcenter">
+          <img class="img-swipe" src="imgs/swipe_disagree_pink.png">
+          <img class="img-swipe" src="imgs/swipe_agree_pink.png">
+          <h1>Disagree / Agree</h1>
+        </div>
+      </div>
+    </div>
+    <div class="swipeable"><h1>Agree</h1></div>
+  </div>  
+
+  <!-- Statement/Question -->
+  <div id="question" class="screen container">
+    <div class="swipeable"><h1>Disagree</h1></div>
+    <div class="swipeable">
+      <div class="panel button yes vcenter">
+        <div class="panel agree"><h1>agree</h1><br><br></div>
+        <img class="img-swipe" src="imgs/swipe_agree_pink.png">
+      </div>
+      <div class="panel statement">
+          <h2>Friends should be shamed for flying</h2>
+      </div>
+      <div class="panel"><h1 class="counter">00:00</h1></div>
+      <div class="panel button no vcenter">
+          <img class="img-swipe" src="imgs/swipe_disagree_pink.png"/>
+          <h1>Disagree</h1>
+      </div>
+    </div>
+    <div class="swipeable"><h1>Agree</h1></div>
+  </div>
+
+  <!-- Waiting -->
+  <div id="waiting" class="screen">
+    <div class="panel vcenter question">
+        <h1>You responded</h1> 
+    </div>
+    <div class="panel vcenter question">
+      <span class="answer yes">Agree</span>
+      <div class="panel pleasewait">
+        <h3>Other people are still responding...</h3>
+      </div>  
+    </div>   
+  </div>  
+
+  <!-- Prompt -->
+  <div id="prompt" class="screen">
+    <div class="panel vcenter question">
+      <h1>You responded</h1> 
+    </div>
+    <div class="panel vcenter question">
+      <span class="answer no">Disagree</span>
+    </div>
+    <div class="panel provide">
+      <h3>Please provide a statement that explains your answer.</h3>
+    </div>
+    <div class="panel"><textarea placeholder="Write your statement here...."></textarea></div>
+    <div class="panel button submit"><h1>Submit</h1></div>  
+  </div> 
+
+  <!-- Consensus -->
+  <div id="consensus" class="screen container">
+    <div class="swipeable">
+      <div class="panel vcenter">
+        <h1>You have</h1>
+        <h1>consensus!!!!</h1>
+      </div>
+      <div class="panel vcenter consensustext">
+        <p>
+          You have at least reached 
+          5 times consensus in this
+          discussion.
+
+
+          Although you might differ in
+          opinions on this statement,
+          you have discovered enough 
+          common ground to make
+          decisions together.
+        </p>
+      </div>  
+      <div class="panel vcenter">
+        <h1>Results</h1>
+        <img class="img-swipe" src="imgs/swipe_agree_pink.png">
+      </div>
+    </div>
+    <div class="swipeable"><h1>Results</h1></div>
+  </div> 
+
+  <!-- No consensus -->
+  <div id="consensless" class="screen">
+    <div class="panel vcenter">
+      <div class="panel vcenter ">
+        <h1>You unfortunately had no moments of consensus.</h1>
+        <h1>🙁🙁🙁</h1>
+      </div>  
+    <div class="panel"><br><br><img class="img-swipe" src="imgs/swipe_agree_pink.png"><h1>try again</h1></div>  
+    </div>
+  </div>  
+
+  <!-- Moments -->
+  <div id="moments" class="screen">
+    <div class="panel"><h1>Your moments of consensus.</h1></div>
+    <div class="panel"><h1>🌈🌈🌈</h1></div>  
+    <div class="panel vcenter moments">
+      <ul>
+        <li>00:01 friends should be shamed for flying and i am talking more and more blabla</li>
+        <li>00:01 friends should be shamed for flying</li>
+        <li>00:01 friends should be shamed for flying</li>
+        <li>00:01 friends should be shamed for flying</li>
+        <li>00:01 friends should be shamed for flying</li>
+      </ul>
     </div>
   </div>
-  <div class="panel"><textarea></textarea></div>
-  <div class="panel button submit"><h1 class="center white">Submit</h1></div>
 </div>
-<div class="counter"></div>
+<script src="swipe.js"></script> 
 <script>
-
-// TODO: REMOVE ME - JBG
-let sr
 
 (function() {
 
-  let serverId = -1
-  let userId = -1
-  let counter = -1
+  let counter = 0
+  let timerId
 
   function buttonAudio() {
-    //const elm = document.querySelector('#fg-audio')
     var audio = new Audio('fg.mpeg')
     audio.play()
   }
 
-  function showInstruction(txt) {
-    document.querySelector('#instruction').style.display = 'block' 
-    document.querySelector('#prompt').style.display = 'none' 
-    document.querySelector('#question').style.display = 'none' 
-    document.querySelector('#instruction h1').innerHTML = txt
+  function handleSwipe(screen, id) {
+    console.log('handleSwipe', screen, id)
+    document.querySelector(`#${id}`).classList.add('ubermate')
+    if(screen == 1 && id == 'welcome') ws.send(JSON.stringify({ cmd: 'USER_HELLO' }))
+
   }
 
-  function showQuestion(txt) {
-    document.querySelector('#instruction').style.display = 'none' 
-    document.querySelector('#prompt').style.display = 'none' 
-    document.querySelector('#question').style.display = 'block' 
-    document.querySelector('#question .text h1').innerHTML = txt
+  function init() {
+    document.addEventListener('swipe', e => {
+      console.log('swipe', e.detail)
+      console.log('swipe', e.explicitOriginalTarget.id)
+      handleSwipe(e.detail, e.explicitOriginalTarget.id)
+    })
   }
 
-  function answerQuestion(val) {
-    document.querySelector('#instruction').style.display = 'block' 
-    document.querySelector('#prompt').style.display = 'none' 
-    document.querySelector('#question').style.display = 'none' 
-    ws.send(JSON.stringify({
-      cmd: 'USER_ANSWER',
-      id: userId,
-      server_id: serverId,
-      val: val
-    }))
+  function strPadLeft(str, pad, length) {
+    return (new Array(length + 1).join(pad) + str).slice(-length)
   }
 
-  function showPrompt(txt, ans) {
-    document.querySelector('textarea').value = ''
-    document.querySelector('#instruction').style.display = 'none' 
-    document.querySelector('#prompt').style.display = 'block' 
-    document.querySelector('#question').style.display = 'none' 
-
-    document.querySelector('#prompt .question').innerHTML = txt
-    if(ans) {
-      document.querySelector('#prompt .answer').innerHTML = 'Agree' 
-      document.querySelector('#prompt .answer').classList.remove('no') 
-      document.querySelector('#prompt .answer').classList.add('yes') 
-    } else {
-      document.querySelector('#prompt .answer').innerHTML = 'Disagree'
-      document.querySelector('#prompt .answer').classList.remove('yes') 
-      document.querySelector('#prompt .answer').classList.add('no') 
-    }
+  function startTimer(t, elm) {
+    counter = t
+    timerId = setInterval(() => {
+      const time = --counter
+      const minutes = Math.floor(time / 60)
+      const seconds = Math.floor(time - minutes * 60)
+      console.log(minutes)
+      console.log(seconds)
+      const tstr = strPadLeft('' + minutes, '0', 2) +
+        ":" +
+        strPadLeft('' + seconds, '0', 2)
+      console.log(tstr)
+      elm.innerHTML = tstr
+    }, 1000)
   }
 
-  function submitPrompt(val) {
-    buttonAudio()
-    showInstruction("Someone is typing...")
-    ws.send(JSON.stringify({
-      cmd: 'USER_PROMPT',
-      id: userId,
-      server_id: serverId,
-      val: val
-    }))
+  // Screen functions - JBG
+
+  function hideAll() {
+    if(timerId) clearInterval(timerId)
+    const screens = document.querySelectorAll('.screen')
+    screens.forEach(s => {
+      s.classList.remove('ubermate')
+      s.style.display = 'none'
+    })
+    document.querySelector('body').classList.remove('consensus')
   }
 
-  function sendResponse(val) {
-    ws.send(JSON.stringify({
-      cmd: 'USER_RESPONSE',
-      id: userId,
-      server_id: serverId,
-      val: val
-    }))
+  function showWelcome() {
+    setupSwipe('#welcome', 1)
+    hideAll()
+    document.querySelector('#welcome').style.display = 'flex'
   }
 
-  // TODO: REMOVE ME - JBG
-  sr = sendResponse
-
-  function startCounter(t) {
-    counter = t 
-    document.querySelector('.counter').style.display = 'block'
+  function showTil(t) {
+    hideAll()
+    startTimer(t, document.querySelector('#til .counter'))
+    document.querySelector('#til').style.display = 'block'
   }
 
-  function stopTimer() {
-    document.querySelector('.counter').style.display = 'none'
-  }
+  function showTutorial() {
+    hideAll()
+    document.querySelector('#tutorial').style.display = 'block'
+  } 
+
+  function showReady() {
+    setupSwipe('#ready', 2)
+    hideAll()
+    document.querySelector('#ready').style.display = 'flex'
+  }  
+
+  function showQuestion() {
+    setupSwipe('#question', 2)
+    hideAll()
+    startTimer(600, document.querySelector('#question .counter'))
+    document.querySelector('#question').style.display = 'flex'
+  }  
+
+  function showWaiting() {
+    hideAll()
+    document.querySelector('#waiting').style.display = 'block'
+  }  
+
+  function showPrompt() {
+    hideAll()
+    document.querySelector('#prompt').style.display = 'block'
+    document.querySelector('#prompt textarea').focus()
+  } 
+
+  function showConsensus() {
+    setupSwipe('#consensus', 1)
+    hideAll()
+    document.querySelector('#consensus').style.display = 'flex'
+    document.querySelector('body').classList.add('consensus')
+  }  
+
+  function showConsensless() {
+    hideAll()
+    document.querySelector('#consensless').style.display = 'block'
+  } 
+
+  function showMoments() {
+    hideAll()
+    document.querySelector('#moments').style.display = 'block'
+    document.querySelector('body').classList.add('consensus')
+  }          
 
   // Websocket stuff - JBG
 
@@ -284,11 +305,10 @@ let sr
 
   ws.onopen = function(e) {
     console.log('Websocket open.')
-    ws.send(JSON.stringify({ cmd: 'USER_HELLO' }))
+    //ws.send(JSON.stringify({ cmd: 'USER_HELLO' }))
   }
 
   ws.onclose = function(e) {
-    stopTimer()
     console.log('Websocket closed.')
   }
 
@@ -305,6 +325,7 @@ let sr
         userId = res['id']
         serverId = res['server_id']
         console.log('User id: ' + userId )
+        showTil(((res['start_time'] * 1000) - Date.now()) / 1000)
         break
       case 'USER_QUESTION':
         startCounter(15)
@@ -337,35 +358,11 @@ let sr
     }
   }
 
-  document.querySelector('#question .yes').addEventListener('click', (e) => {
-    document.querySelector('#instruction').classList.add('ubermate') 
-    document.querySelector('#instruction').classList.remove('no')
-    document.querySelector('#instruction').classList.add('yes')
-    buttonAudio()
-    answerQuestion(true)
-  })
-
-  document.querySelector('#question .no').addEventListener('click', (e) => {
-    document.querySelector('#instruction').classList.add('ubermate') 
-    document.querySelector('#instruction').classList.remove('yes')
-    document.querySelector('#instruction').classList.add('no')
-    buttonAudio()
-    answerQuestion(false)
-  })
-
-  document.querySelector('#prompt .submit').addEventListener('click', (e) => {
-    submitPrompt(document.querySelector('textarea').value)
-  })
-
-  document.querySelector('#instruction').addEventListener('click', e => {
-    const elm = document.querySelector('#bg-audio')
-    elm.paused ? elm.play() : elm.pause()
-    showInstruction("Users joining please wait...")
-  })
-
-  setInterval(() => document.querySelector('.counter').innerHTML = --counter, 1000)
+  init()
+  showWelcome()
 
 })()
+
 </script>
 </body>
 </html>

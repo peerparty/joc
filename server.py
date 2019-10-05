@@ -142,15 +142,19 @@ class ConsensusManager:
         t = threading.Timer(self.join_time, self.start_cs)
         t.start()
 
+def foo(ws):
+    print("foo")
+
 def main():
     try:
         cm = ConsensusManager()
         cm.next_round()
 
-        ws_server = ws.WS(cm.handle_msg)
-        ws_thread = threading.Thread(target=ws_server.start)
-        ws_thread.daemon = True
-        ws_thread.start()
+        #ws_server = ws.WS(cm.handle_msg)
+        #ws_server = ws.WS(foo)
+        #ws_thread = threading.Thread(target=ws_server.start)
+        #ws_thread.daemon = True
+        #ws_thread.start()
 
         http_server = hs.HTTP()
         http_thread = threading.Thread(target=http_server.start)
