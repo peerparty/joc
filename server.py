@@ -9,7 +9,6 @@ import json
 import sys
 import datetime
 
-import hs 
 import ws
 import cs
 
@@ -21,8 +20,9 @@ class TreeEncoder(json.JSONEncoder):
 
 class ConsensusManager:
     def __init__(self):
-        self.join_time = 120
-        self.tutorial_time = 31 
+        self.join_time = 120 
+        #self.tutorial_time = 31 
+        self.tutorial_time = 2 
         self.servers = {}
         self.last_server_id = -1
         self.server_count = 0
@@ -46,6 +46,8 @@ class ConsensusManager:
             'server_id': self.last_server_id,
             'start_time': self.start_time
         }))
+        if user_id > 1:
+          cs.broadcast_new_user()
 
     def add_screen(self, ws):
         self.screens.append(ws)
@@ -142,25 +144,15 @@ class ConsensusManager:
         t = threading.Timer(self.join_time, self.start_cs)
         t.start()
 
-def foo(ws):
-    print("foo")
-
 def main():
     try:
         cm = ConsensusManager()
         cm.next_round()
 
-        #ws_server = ws.WS(cm.handle_msg)
-        #ws_server = ws.WS(foo)
-        #ws_thread = threading.Thread(target=ws_server.start)
-        #ws_thread.daemon = True
-        #ws_thread.start()
-
-        http_server = hs.HTTP()
-        http_thread = threading.Thread(target=http_server.start)
-        http_thread.daemon = True
-        http_thread.start()
-        #http_server.start()
+        ws_server = ws.WS(cm.handle_msg)
+        ws_thread = threading.Thread(target=ws_server.start)
+        ws_thread.daemon = True
+        ws_thread.start()
 
     except KeyboardInterrupt:
         print("^C received, shutting down server")

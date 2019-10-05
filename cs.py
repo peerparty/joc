@@ -67,7 +67,7 @@ class ConsensusServer:
     def __init__(self, cm):
         self.answer_time = 15 
         self.prompt_time = 30 
-        self.session_time = 600 
+        self.session_time = 30 
         #self.answer_time = 2 
         #self.prompt_time = 2 
         self.users = {} 
@@ -199,7 +199,11 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
-                payload = { 'cmd': 'USER_QUESTION', 'txt': user.q.name }
+                payload = {
+                    'cmd': 'USER_QUESTION',
+                    'txt': user.q.name,
+                    'time': self.answer_time
+                }
                 user.ws.sendMessage(json.dumps(payload))
 
     def collect_answers(self):
@@ -219,7 +223,8 @@ class ConsensusServer:
                 payload = {
                     'cmd': 'USER_PROMPT',
                     'txt': user.p.ques.name,
-                    'ans': user.p.ans.val
+                    'ans': user.p.ans.val,
+                    'time': self.prompt_time
                 }
                 user.ws.sendMessage(json.dumps(payload))
 
@@ -261,8 +266,8 @@ class ConsensusServer:
     def add_user(self, ws):
         self.user_count += 1 
         self.users[self.user_count] = User(self.user_count, ws)
-        if self.user_count > 1:
-          self.broadcast_new_user()
+        #if self.user_count > 1:
+        #  self.broadcast_new_user()
         return self.user_count
 
     def broadcast_new_user(self):
@@ -273,12 +278,19 @@ class ConsensusServer:
                 'count': len(self.users)
             }
             user.ws.sendMessage(json.dumps(payload))
+
+    def broadcast_wait(self):
+        for user_id, user in self.users.items():
+            payload = { 'cmd': 'USER_WAIT' }
+            user.ws.sendMessage(json.dumps(payload))
     
     def check_start(self, user_id, val):
         self.user_responses[user_id] = val
         if (len(self.user_responses) == len(self.users) and
             sum(self.user_responses.values()) == len(self.users)):
             self.cm.start_cs()
+        elif len(self.user_responses) == len(self.users):
+          self.broadcast_wait()
         
     def end_session(self): 
         self.send_done()
@@ -297,7 +309,7 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
           self.cm.not_enough()
 
-        #t = threading.Timer(self.session_time, self.end_session)
-        #t.start()
+        t = threading.Timer(self.session_time, self.end_session)
+        t.start()
 
 
