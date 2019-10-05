@@ -1,0 +1,107 @@
+.content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 6;
+}
+
+.content .dots {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.content .dots span {
+
+  position: absolute;
+  border-radius: 50%;
+  background-image: #ffff00;
+  border:2px solid #ff69b4;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+  animation: vawe 7s linear infinite;
+}
+
+.content .dots span:nth-child(1) {
+  top: 120px;
+  left: 280px;
+  width: 75px;
+  height: 65px;
+}
+
+.content .dots span:nth-child(2) {
+  top: 20px;
+  left: 300px;
+  width: 40px;
+  height: 50px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+  transform: rotate(90deg);
+}
+
+.content .dots span:nth-child(3) {
+    top: 440px;
+    left: 30px;
+  width: 75px;
+  height: 60px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+}
+
+.content .dots span:nth-child(4) {
+  
+    top: 145px;
+    left: 30px;
+  
+  width: 50px;
+  height: 40px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+}
+
+.content .dots span:nth-child(5) {
+    top: 550px;
+    left: 30px;
+  width: 50px;
+  height: 40px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+}
+
+.content .dots span:nth-child(6) {
+    top: 30px;
+    left: 25px;
+  /*left: calc(100% - 350px);*/
+  width: 55px;
+  height: 65px;
+}
+
+.content .dots span:nth-child(7) {
+  top: 450px;
+  left: 250px;
+  width: 40px;
+  height: 30px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+}
+
+.content .dots span:nth-child(8) {
+    top: 500px;
+    left: 300px;
+  /*left: calc(100% - 350px);*/
+  width: 60px;
+  height: 55px;
+  border-radius: 40% 80% 55% 45%/32% 53% 47% 80%;
+}
+
+
+@keyframes vawe {
+  20% {
+    border-radius: 45% 55% 62% 38% / 53% 51% 49% 47%;
+  }
+  40% {
+    border-radius: 45% 55% 49% 51% / 36% 51% 49% 64%;
+  }
+  60% {
+    border-radius: 60% 40% 57% 43% / 47% 62% 38% 53%;
+  }
+  80% {
+    border-radius: 60% 40% 32% 68% / 38% 36% 64% 62%;
+  }
+}
+
