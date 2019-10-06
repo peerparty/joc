@@ -67,7 +67,7 @@ class ConsensusServer:
     def __init__(self, cm):
         self.answer_time = 15 
         self.prompt_time = 30 
-        self.session_time = 30 
+        self.session_time = 600 
         #self.answer_time = 2 
         #self.prompt_time = 2 
         self.users = {} 

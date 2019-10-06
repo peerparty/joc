@@ -20,9 +20,9 @@ class TreeEncoder(json.JSONEncoder):
 
 class ConsensusManager:
     def __init__(self):
-        self.join_time = 120 
+        self.join_time = 600 
         #self.tutorial_time = 31 
-        self.tutorial_time = 2 
+        self.tutorial_time = 5 
         self.servers = {}
         self.last_server_id = -1
         self.server_count = 0
@@ -90,11 +90,8 @@ class ConsensusManager:
         ws.sendMessage(json.dumps({
             'cmd': 'SCREEN_INIT',
             # TODO: get real data - JBG
-            'data': [
-                "Foo",
-                "Bar",
-                "Baz"
-            ],
+            'data': self.read_file(),
+            'stmt': 'Foobar.',
             'start_time': self.start_time,
             'id': self.last_server_id
         }))
@@ -117,7 +114,22 @@ class ConsensusManager:
         for ws in self.screens:
             ws.sendMessage(json.dumps(payload, cls=TreeEncoder))
 
+    def write_file(self, stmt):
+        with open('consensus.txt', 'a') as f:
+            f.write(str(int(time.time())) + ',' + stmt + '\n')
+
+    def read_file(self):
+        stmts = []
+        with open('consensus.txt', 'r') as f:
+            content = f.readlines()
+        content = [x.strip() for x in content] 
+        for line in content:
+            elems = line.split(',')
+            stmts.append({ 'time': int(elems[0]), 'stmt': elems[1] })
+        return stmts
+          
     def send_consensus(self, stmt):
+        self.write_file(stmt)
         self.screencast({
             'cmd': 'SCREEN_CONSENSUS',
             'data': stmt,
