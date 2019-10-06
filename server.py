@@ -21,8 +21,8 @@ class TreeEncoder(json.JSONEncoder):
 class ConsensusManager:
     def __init__(self):
         self.join_time = 600 
-        #self.tutorial_time = 31 
-        self.tutorial_time = 5 
+        self.tutorial_time = 31 
+        #self.tutorial_time = 5 
         self.servers = {}
         self.last_server_id = -1
         self.server_count = 0
@@ -90,7 +90,7 @@ class ConsensusManager:
         ws.sendMessage(json.dumps({
             'cmd': 'SCREEN_INIT',
             # TODO: get real data - JBG
-            'data': self.read_file(),
+            'data': self.read_file()[:-5],
             'stmt': 'Foobar.',
             'start_time': self.start_time,
             'id': self.last_server_id
