@@ -10,14 +10,87 @@ WIN WIN does not promise consensus on a starting statement but rather uses a tre
 
     $ ./server.sh
 
-You will prompted to enter a statement on which to look for moments of concensus.
-
-    Enter the starting question: <THE STATEMENT>
-
 For example: "Friends who fly be shamed."
 
-## Notes
+## Docker setup
 
-`index.html` contains an initalization for a web socket connection.  You probably want to change that... 😀
+You only ever do this once.
 
+    $ docker run -p 80:88 --name winwin -it debian:latest
+
+## Update apt
+
+    $ apt update
+
+## Install git
+
+    $ apt install git
+
+## Install nginx
+
+    $ apt install nginx
+
+## Install a text editor
+
+    $ apt install nano
+
+## Install python
+
+    $ apt install python3
+
+## Install python pip
+
+    $ apt install python3-pip
+
+## Configure nginx
+
+Edit the default site for nginx.
+
+    $ nano /etc/nginx/sites-enabled/default
+
+Add the follow: 
+
+    map $http_upgrade $connection_upgrade {
+            default upgrade;
+            ''      close;
+    }
+
+    server {
+            listen 80 default_server;
+            listen [::]:80 default_server;
+
+            root /var/www/html/winwin-app;
+
+            location /ws/ {
+                    proxy_pass http://127.0.0.1:8000;
+                    proxy_http_version 1.1;
+                    proxy_set_header Upgrade $http_upgrade;
+                    proxy_set_header Connection $connection_upgrade;
+                    proxy_read_timeout 86400;
+            }
+
+            location / {
+                    try_files $uri $uri/ =404;
+            }
+    }
+
+## Get the winwin-app html/js/css code
+
+    $ cd /var/www/html
+
+    $ git clone git@github.com:peerparty/winwin-app.git
+
+## Get the joc python server code
+
+    $ cd
+
+    $ git clone git@github.com:peerparty/joc.git
+
+## Run the python server
+
+    $ ./server.py
+
+## Open browser
+
+    `http://localhost/`
 
