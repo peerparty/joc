@@ -16,7 +16,7 @@ For example: "Friends who fly be shamed."
 
 You only ever do this once.
 
-    $ docker run -p 80:88 --name winwin -it debian:latest
+    $ docker run -p 80:80 --name winwin -it debian:latest
 
 ## Update apt
 
@@ -41,6 +41,16 @@ You only ever do this once.
 ## Install python pip
 
     $ apt install python3-pip
+
+## Install pip dependencies
+
+### SimpleWebSocketServer
+
+    $ pip3 install --user SimpleWebSocketServer
+
+### anytree 
+
+    $ pip3 install --user anytree
 
 ## Configure nginx
 
@@ -74,13 +84,15 @@ Add the follow:
             }
     }
 
-## Add your ssh keys to your container
+## Start nginx
 
-    $ mkdir ~/.ssh
+    $ nginx
+
+## Add your ssh keys to your container
 
 *From another terminal*
 
-    $ docker cp ~/.ssh/idrsa* winwin:/root/.ssh
+    $ docker cp ~/.ssh winwin:/root/.ssh
 
 ## Get the winwin-app html/js/css code
 
@@ -96,9 +108,21 @@ Add the follow:
 
 ## Run the python server
 
+    $ cd joc
+
     $ ./server.py
 
 ## Open browser
 
     `http://localhost/`
+
+## Good stuff to know
+
+### Stopping nginx
+
+    $ nginx -s stop
+
+### Starting your docker container
+
+    $ docker start -i winwin
 
