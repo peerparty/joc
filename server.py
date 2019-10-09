@@ -90,7 +90,7 @@ class ConsensusManager:
         ws.sendMessage(json.dumps({
             'cmd': 'SCREEN_INIT',
             # TODO: get real data - JBG
-            'data': self.read_file()[5:],
+            'data': self.read_file()[-5:],
             'stmt': 'Foobar.',
             'start_time': self.start_time,
             'id': self.last_server_id
