@@ -35,9 +35,10 @@ class ConsensusManager:
         self.server_count += 1
         return self.last_server_id
 
-    def add_user(self, ws):
+    def add_user(self, ws, server_id, user_id):
         cs = self.servers[self.last_server_id]
-        user_id = cs.add_user(ws)
+        if server_id != self.last_server_id or user_id < 0:
+            user_id = cs.add_user(ws)
         #print("created user %d @ server %d" %
         #    (user_id, self.last_server_id))
         ws.sendMessage(json.dumps({
@@ -54,12 +55,12 @@ class ConsensusManager:
 
     def handle_msg(self, ws):
         data = json.loads(ws.data)
-        #print('handle_msg', data)
+        print('handle_msg', data)
         cmd = data['cmd']
 
         # USER COMMANDS - JBG
         if cmd == 'USER_HELLO':
-            self.add_user(ws)
+            self.add_user(ws, data['server_id'], data['user_id'])
         elif cmd == 'USER_ANSWER':
             cs = self.servers[data['server_id']]
             cs.answer_response(data['id'], data['val'])
