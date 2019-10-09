@@ -90,9 +90,13 @@ Add the follow:
 
 ## Add your ssh keys to your container
 
+    $ mkdir .ssh
+
 *From another terminal*
 
-    $ docker cp ~/.ssh winwin:/root/.ssh
+    $ docker cp ~/.ssh/id_rsa winwin:/root/.ssh
+
+    $ docker cp ~/.ssh/id_rsa.pub winwin:/root/.ssh
 
 ## Get the winwin-app html/js/css code
 
