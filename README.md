@@ -74,6 +74,14 @@ Add the follow:
             }
     }
 
+## Add your ssh keys to your container
+
+    $ mkdir ~/.ssh
+
+*From another terminal*
+
+    $ docker cp ~/.ssh/idrsa* winwin:/root/.ssh
+
 ## Get the winwin-app html/js/css code
 
     $ cd /var/www/html
