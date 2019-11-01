@@ -66,7 +66,6 @@ class ConsensusManager:
         })
 
     def rm_user(self, ws):
-        print("REMOVING USER", ws.user_id)
         cs = self.servers[self.last_server_id]
         cs.rm_user(ws)
         print("USER COUNT", cs.user_count)
@@ -164,7 +163,6 @@ class ConsensusManager:
 
     def not_enough(self):
         self.screencast({ 'cmd': 'SCREEN_NOT_ENOUGH' })
-
         self.next_round()
         
     def next_round(self):

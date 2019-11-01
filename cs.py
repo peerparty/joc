@@ -87,13 +87,12 @@ class ConsensusServer:
 
     def answer_response(self, user_id, ans):
         user = self.users[user_id]
-        ans = ans.strip()
-        if len(ans) > 0:
-            user.q.add_answer(Answer(user, ans))
+        user.q.add_answer(Answer(user, ans))
         self.print_root()
 
     def prompt_response(self, user_id, prompt):
         user = self.users[user_id]
+        prompt = prompt.strip()
         if len(prompt) > 0: 
             self.add_question(prompt, user.p.ques)
         self.print_root()
@@ -275,13 +274,14 @@ class ConsensusServer:
 
     def rm_user(self, ws):
       if ws.user_id in self.users and self.user_count > 1:
+        print("REMOVING USER", ws.user_id, self.user_count)
         self.user_count -= 1 
         del self.users[ws.user_id]
-      else: 
-          for user_id, user in self.users.items():
-              payload = { 'cmd': 'USER_ERROR' }
-              user.ws.sendMessage(json.dumps(payload))
-          self.cm.next_round()
+        if self.user_count < 2: 
+            for user_id, user in self.users.items():
+                payload = { 'cmd': 'USER_ERROR' }
+                user.ws.sendMessage(json.dumps(payload))
+            self.cm.next_round()
 
     def broadcast_new_user(self):
         self.user_responses = {} 
