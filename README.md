@@ -12,6 +12,83 @@ WIN WIN does not promise consensus on a starting statement but rather uses a tre
 
 For example: "Friends who fly be shamed."
 
+# Websocket messages
+
+All messages between components and actors are delivered via web sockets in JSON packages.
+
+## Screen messages
+
+### SCREEN\_INIT
+
+A screen is added to the system. Contains a list of past consensus statements to show, the next statement to be considered, the start time of the next session and the screens unique id.
+
+    { 'cmd': 'SCREEN_INIT', 'data': [ <stmt 0>, <stmt 1> ], 'stmt': <stmt>, 'start_time': <time>, 'id': <server_id> }
+
+### SCREEN\_CONSENSUS
+
+Consensus has occured.
+
+    { 'cmd': 'SCREEN_CONSENSUS', 'data': <stmt>, 'id': <server_id> }
+
+### SCREEN\_START
+
+A new session is starting.
+
+    { 'cmd': 'SCREEN_START' }
+
+### SCREEN\_TREE
+
+A user has performed an action, the state of the system has changed.
+
+    { 'cmd': 'SCREEN_TREE', 'data': <json object representing the state of the system> }
+
+### SCREEN\_NOT\_ENOUGH
+
+Not enough users joined the session.
+
+    { 'cmd': 'SCREEN_NOT_ENOUGH' }
+
+## User messages
+
+### USER\_JOIN
+
+A new user has joined.
+
+    { 'cmd': 'USER_JOIN', 'count': <number of participating users> }
+
+### USER\_WAIT
+
+There are not enough users to begin, so tell user to wait.
+
+    { 'cmd': 'USER_WAIT' }
+
+### USER\_NOT\_ENOUGH
+
+Not enough users joined the session, the current user will also need to join laster.
+
+    { 'cmd': 'USER_NOT_ENOUGH' }
+
+### USER\_DONE
+
+The experience is over, either time expired or there is consensus on the starting statement.  `data` contains a list of statements where there was consensus during the experience.
+
+    { 'cmd': 'USER_DONE', 'data': [ <stmt 0>, <stmt 1>, ... <stmt n> ]
+
+### USER\_TUTORIAL
+
+Start the tutorial animation.
+
+    { 'cmd': 'USER_TUTOIAL' }
+
+### USER\_QUESTION
+
+User sees a statement for the sent amound of time.
+
+    { 'cmd': 'USER_QUESTION', 'txt': <stmt> 'time': <time> }
+
+
+# Development Environment setup
+
 ## Docker setup
 
 You only ever do this once.
@@ -119,6 +196,10 @@ Add the follow:
 ## Open browser
 
     `http://localhost/`
+
+### The screen
+
+    `http://localhost/screen.html`
 
 ## Good stuff to know
 
