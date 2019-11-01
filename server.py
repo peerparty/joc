@@ -35,30 +35,29 @@ class ConsensusManager:
         self.server_count += 1
         return self.last_server_id
 
-    def add_user(self, ws, server_id, user_id):
+    def add_user(self, ws, server_id):
         cs = self.servers[self.last_server_id]
-        if server_id != self.last_server_id or user_id < 0:
-            user_id = cs.add_user(ws)
+        if server_id != self.last_server_id or ws.user_id not in cs.users:
+            user = cs.add_user(ws)
             print("created user %d @ server %d" %
-                (user_id, self.last_server_id))
-        elif cs.users[user_id]:
+                (user.id, self.last_server_id))
+        elif ws.user_id in cs.users:
             print("USER EXISTS?",
                 server_id,
                 self.last_server_id,
-                user_id)
+                ws.user_id)
         else:
             print("FAIL: USER CREATE.",
                 server_id,
                 self.last_server_id,
-                user_id)
-
-            
+                ws.user_id)
 
         ws.sendMessage(json.dumps({
             'cmd': 'USER',
-            'id': user_id,
+            'id': ws.user_id,
             'server_id': self.last_server_id,
-            'start_time': self.start_time
+            'start_time': self.start_time,
+            'count': cs.user_count
         }))
 
         self.screencast({
@@ -66,8 +65,11 @@ class ConsensusManager:
             'count': cs.user_count 
         })
 
-        if user_id > 1:
-          cs.broadcast_new_user()
+    def rm_user(self, ws):
+        print("REMOVING USER", ws.user_id)
+        cs = self.servers[self.last_server_id]
+        cs.rm_user(ws)
+        print("USER COUNT", cs.user_count)
 
     def add_screen(self, ws):
         self.screens.append(ws)
@@ -79,7 +81,7 @@ class ConsensusManager:
 
         # USER COMMANDS - JBG
         if cmd == 'USER_HELLO':
-            self.add_user(ws, data['server_id'], data['user_id'])
+            self.add_user(ws, data['server_id'])
         elif cmd == 'USER_ANSWER':
             cs = self.servers[data['server_id']]
             cs.answer_response(data['id'], data['val'])
@@ -148,7 +150,8 @@ class ConsensusManager:
         content = [x.strip() for x in content] 
         for line in content:
             elems = line.split(',')
-            stmts.append({ 'time': int(elems[0]), 'stmt': elems[1] })
+            if len(elems) == 2:
+                stmts.append({ 'time': int(elems[0]), 'stmt': elems[1] })
         return stmts
           
     def send_consensus(self, stmt):
@@ -161,6 +164,7 @@ class ConsensusManager:
 
     def not_enough(self):
         self.screencast({ 'cmd': 'SCREEN_NOT_ENOUGH' })
+
         self.next_round()
         
     def next_round(self):
@@ -184,7 +188,7 @@ def main():
         cm = ConsensusManager()
         cm.next_round()
 
-        ws_server = ws.WS(cm.handle_msg)
+        ws_server = ws.WS(cm.handle_msg, cm.rm_user)
         ws_thread = threading.Thread(target=ws_server.start)
         ws_thread.daemon = True
         ws_thread.start()

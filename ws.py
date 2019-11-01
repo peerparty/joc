@@ -4,9 +4,12 @@ import json
 import ssl
 
 class WS():
-  def __init__(self, handler):
+  def __init__(self, handler, remover):
     global msg_handler
     msg_handler = handler
+    global user_remover
+    user_remover = remover
+    
   
   def start(self):
     self.server = SimpleWebSocketServer('', 8000, WSClient)
@@ -31,11 +34,12 @@ class WSClient(WebSocket):
     msg_handler(self)
 
   def handleConnected(self):
-    print(self.address, 'connected')
+    self.user_id = self.address[1]
+    print(self.user_id, 'connected')
 
   def handleClose(self):
     print(self.address, 'closed')
-    clients.remove(self)
-
-   
+    global user_remover 
+    user_remover(self)
+    #clients.remove(self)
 

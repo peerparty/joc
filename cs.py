@@ -65,8 +65,8 @@ class Question(Node):
 
 class ConsensusServer:
     def __init__(self, cm):
-        self.answer_time = 15 
-        self.prompt_time = 30 
+        self.answer_time = 30 
+        self.prompt_time = 60 
         self.session_time = 600 
         #self.answer_time = 2 
         #self.prompt_time = 2 
@@ -87,7 +87,9 @@ class ConsensusServer:
 
     def answer_response(self, user_id, ans):
         user = self.users[user_id]
-        user.q.add_answer(Answer(user, ans))
+        ans = ans.strip()
+        if len(ans) > 0:
+            user.q.add_answer(Answer(user, ans))
         self.print_root()
 
     def prompt_response(self, user_id, prompt):
@@ -249,12 +251,12 @@ class ConsensusServer:
         for pre, fill, node in RenderTree(self.root):
             ans_str = ','.join(map(str,
                 [(ans.user.id, ans.val) for ans in node.answers]))
-            print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
-        exporter = DictExporter()
-        self.cm.screencast({
-            'cmd': 'SCREEN_TREE',
-            'data': exporter.export(self.root)
-        })
+            #print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
+        #exporter = DictExporter()
+        #self.cm.screencast({
+        #    'cmd': 'SCREEN_TREE',
+        #    'data': exporter.export(self.root)
+        #})
 
     def print_users(self):
         for user_id, user in self.users.items():
@@ -265,10 +267,21 @@ class ConsensusServer:
 
     def add_user(self, ws):
         self.user_count += 1 
-        self.users[self.user_count] = User(self.user_count, ws)
-        #if self.user_count > 1:
-        #  self.broadcast_new_user()
-        return self.user_count
+        user = User(ws.user_id, ws)
+        self.users[ws.user_id] = user
+        if self.user_count > 1:
+            self.broadcast_new_user()
+        return user 
+
+    def rm_user(self, ws):
+      if ws.user_id in self.users and self.user_count > 1:
+        self.user_count -= 1 
+        del self.users[ws.user_id]
+      else: 
+          for user_id, user in self.users.items():
+              payload = { 'cmd': 'USER_ERROR' }
+              user.ws.sendMessage(json.dumps(payload))
+          self.cm.next_round()
 
     def broadcast_new_user(self):
         self.user_responses = {} 
@@ -300,14 +313,14 @@ class ConsensusServer:
         #print("Enter the starting question:")
         #question = input()
         if len(self.users) > 1:        
-          self.add_question(stmt, parent=self.root)
-          self.print_root()
-          self.collect_answers()
+            self.add_question(stmt, parent=self.root)
+            self.print_root()
+            self.collect_answers()
         else:
-          for user_id, user in self.users.items():
-            payload = { 'cmd': 'USER_NOT_ENOUGH' }
-            user.ws.sendMessage(json.dumps(payload))
-          self.cm.not_enough()
+            for user_id, user in self.users.items():
+                payload = { 'cmd': 'USER_NOT_ENOUGH' }
+                user.ws.sendMessage(json.dumps(payload))
+            self.cm.not_enough()
 
         t = threading.Timer(self.session_time, self.end_session)
         t.start()
