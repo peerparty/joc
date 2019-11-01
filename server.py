@@ -39,14 +39,33 @@ class ConsensusManager:
         cs = self.servers[self.last_server_id]
         if server_id != self.last_server_id or user_id < 0:
             user_id = cs.add_user(ws)
-        #print("created user %d @ server %d" %
-        #    (user_id, self.last_server_id))
+            print("created user %d @ server %d" %
+                (user_id, self.last_server_id))
+        elif cs.users[user_id]:
+            print("USER EXISTS?",
+                server_id,
+                self.last_server_id,
+                user_id)
+        else:
+            print("FAIL: USER CREATE.",
+                server_id,
+                self.last_server_id,
+                user_id)
+
+            
+
         ws.sendMessage(json.dumps({
             'cmd': 'USER',
             'id': user_id,
             'server_id': self.last_server_id,
             'start_time': self.start_time
         }))
+
+        self.screencast({
+            'cmd': 'SCREEN_USER_COUNT',
+            'count': cs.user_count 
+        })
+
         if user_id > 1:
           cs.broadcast_new_user()
 
@@ -88,9 +107,11 @@ class ConsensusManager:
 #            cs.start(data['val'])
 #
     def screen_init(self, ws):
+        cs = self.servers[self.last_server_id]  
         ws.sendMessage(json.dumps({
             'cmd': 'SCREEN_INIT',
             # TODO: get real data - JBG
+            'count': cs.user_count,
             'data': self.read_file()[-5:],
             'stmt': 'Foobar.',
             'start_time': self.start_time,
@@ -112,6 +133,7 @@ class ConsensusManager:
             t.start()
 
     def screencast(self, payload):
+        print('SCREENCAST', payload)
         for ws in self.screens:
             ws.sendMessage(json.dumps(payload, cls=TreeEncoder))
 
