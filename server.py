@@ -21,12 +21,25 @@ class TreeEncoder(json.JSONEncoder):
 class ConsensusManager:
     def __init__(self):
         self.join_time = 600 
-        self.tutorial_time = 31 
+        #self.tutorial_time = 31 
+        self.tutorial_time = 10
         #self.tutorial_time = 5 
         self.servers = {}
         self.last_server_id = -1
         self.server_count = 0
         self.screens = []
+        self.stmts = [
+            "The Netherlands can do without the EU",
+            "The leaders of this country do not represent me",
+            "You have to pay a lot to be a politician.",
+            "Most politicians are reliable (or unreliable)",
+            "It is the large companies that ultimately govern us",
+            "It would be good if more low-educated people entered the parliament",
+            "If people don't feel well represented, they have to take action themselves.",
+            "In a democracy, the minority must adapt to the majority",
+            "Politicians must keep their election promise at all costs.",
+            "Lobbyists should be banned."
+        ]
 
     def create_server(self):
         consensus_server = cs.ConsensusServer(self)
@@ -114,7 +127,7 @@ class ConsensusManager:
             # TODO: get real data - JBG
             'count': cs.user_count,
             'data': self.read_file()[-5:],
-            'stmt': 'Foobar.',
+            'stmt': self.stmt,
             'start_time': self.start_time,
             'id': self.last_server_id
         }))
@@ -122,7 +135,7 @@ class ConsensusManager:
     def start_session(self):
         #cs.start(data['val'])
         cs = self.servers[self.last_server_id]  
-        cs.start("Foobar.")
+        cs.start(self.stmt)
         #self.screencast({ 'cmd': 'SCREEN_START' })
 
     def start_cs(self):
@@ -166,6 +179,7 @@ class ConsensusManager:
         self.next_round()
         
     def next_round(self):
+        self.stmt = random.choice(self.stmts)
         self.running = False
         server_id = self.create_server()
         self.start_time = int(
@@ -197,4 +211,5 @@ def main():
 
 if __name__== "__main__":
     main()
+    
 

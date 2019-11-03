@@ -250,7 +250,7 @@ class ConsensusServer:
         for pre, fill, node in RenderTree(self.root):
             ans_str = ','.join(map(str,
                 [(ans.user.id, ans.val) for ans in node.answers]))
-            #print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
+            print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
         #exporter = DictExporter()
         #self.cm.screencast({
         #    'cmd': 'SCREEN_TREE',
@@ -273,7 +273,7 @@ class ConsensusServer:
         return user 
 
     def rm_user(self, ws):
-      if ws.user_id in self.users and self.user_count > 1:
+      if ws.user_id in self.users and self.user_count > 0:
         print("REMOVING USER", ws.user_id, self.user_count)
         self.user_count -= 1 
         del self.users[ws.user_id]
