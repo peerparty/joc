@@ -50,29 +50,27 @@ class ConsensusManager:
 
     def add_user(self, ws, server_id):
         cs = self.servers[self.last_server_id]
-        if server_id != self.last_server_id or ws.user_id not in cs.users:
+        if self.running:
+            ws.sendMessage(json.dumps({
+                'cmd': 'USER_FULL',
+            }))
+        elif server_id != self.last_server_id or ws.user_id not in cs.users:
             user = cs.add_user(ws)
             print("created user %d @ server %d" %
-                (user.id, self.last_server_id))
-        elif ws.user_id in cs.users:
-            print("USER EXISTS?",
-                server_id,
-                self.last_server_id,
-                ws.user_id)
+                  (user.id, self.last_server_id))
+            ws.sendMessage(json.dumps({
+                'cmd': 'USER',
+                'id': ws.user_id,
+                'server_id': self.last_server_id,
+                'start_time': self.start_time,
+                'count': cs.user_count
+            }))
         else:
             print("FAIL: USER CREATE.",
                 server_id,
                 self.last_server_id,
                 ws.user_id)
-
-        ws.sendMessage(json.dumps({
-            'cmd': 'USER',
-            'id': ws.user_id,
-            'server_id': self.last_server_id,
-            'start_time': self.start_time,
-            'count': cs.user_count
-        }))
-
+        
         self.screencast({
             'cmd': 'SCREEN_USER_COUNT',
             'count': cs.user_count 
@@ -192,18 +190,16 @@ class ConsensusManager:
         for ws in self.screens:
             self.screen_init(ws)
 
-        t = threading.Timer(self.join_time, self.start_cs)
-        t.start()
-
 def main():
     try:
         cm = ConsensusManager()
         cm.next_round()
 
         ws_server = ws.WS(cm.handle_msg, cm.rm_user)
-        ws_thread = threading.Thread(target=ws_server.start)
-        ws_thread.daemon = True
-        ws_thread.start()
+        #ws_thread = threading.Thread(target=ws_server.start)
+        #ws_thread.daemon = True
+        #ws_thread.start()
+        ws_server.start()
 
     except KeyboardInterrupt:
         print("^C received, shutting down server")
