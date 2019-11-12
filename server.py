@@ -21,8 +21,7 @@ class TreeEncoder(json.JSONEncoder):
 class ConsensusManager:
     def __init__(self):
         self.join_time = 600 
-        #self.tutorial_time = 31 
-        self.tutorial_time = 10
+        self.tutorial_time = 38 
         #self.tutorial_time = 5 
         self.servers = {}
         self.last_server_id = -1
