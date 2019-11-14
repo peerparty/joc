@@ -279,7 +279,7 @@ class ConsensusServer:
         del self.users[ws.user_id]
         if self.user_count < 2: 
             for user_id, user in self.users.items():
-                payload = { 'cmd': 'USER_ERROR' }
+                payload = { 'cmd': 'USER_NOT_ENOUGH' }
                 user.ws.sendMessage(json.dumps(payload))
             self.cm.next_round()
 
@@ -298,15 +298,22 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
     
     def check_start(self, user_id, val):
+
         self.user_responses[user_id] = val
         if (len(self.user_responses) == len(self.users) and
             sum(self.user_responses.values()) == len(self.users)):
             self.cm.start_cs()
         elif len(self.user_responses) == len(self.users):
-          self.broadcast_wait()
+          self.broadcast_not_enough()
         
     def end_session(self): 
         self.send_done()
+
+    def broadcast_not_enough(self):
+      for user_id, user in self.users.items():
+          payload = { 'cmd': 'USER_NOT_ENOUGH' }
+          user.ws.sendMessage(json.dumps(payload))
+      self.cm.not_enough()
 
     def start(self, stmt):
         #print("init_questions")
@@ -317,11 +324,7 @@ class ConsensusServer:
             self.print_root()
             self.collect_answers()
         else:
-            for user_id, user in self.users.items():
-                payload = { 'cmd': 'USER_NOT_ENOUGH' }
-                user.ws.sendMessage(json.dumps(payload))
-            self.cm.not_enough()
-
+            broadcast_not_enough()
         t = threading.Timer(self.session_time, self.end_session)
         t.start()
 
