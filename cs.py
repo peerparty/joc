@@ -250,12 +250,13 @@ class ConsensusServer:
         for pre, fill, node in RenderTree(self.root):
             ans_str = ','.join(map(str,
                 [(ans.user.id, ans.val) for ans in node.answers]))
+            
             print("%s%s,%s %s" % (pre, self.get_emoji(node.state), node.name, ans_str))
-        #exporter = DictExporter()
-        #self.cm.screencast({
-        #    'cmd': 'SCREEN_TREE',
-        #    'data': exporter.export(self.root)
-        #})
+        exporter = DictExporter()
+        self.cm.screencast({
+            'cmd': 'SCREEN_TREE',
+            'data': exporter.export(self.root)
+        })
 
     def print_users(self):
         for user_id, user in self.users.items():
@@ -270,6 +271,7 @@ class ConsensusServer:
         self.users[ws.user_id] = user
         if self.user_count > 1:
             self.broadcast_new_user()
+        self.cm.screencast({ 'cmd': 'SCREEN_USER_JOIN', 'id': ws.user_id })
         return user 
 
     def rm_user(self, ws):
@@ -282,6 +284,7 @@ class ConsensusServer:
                 payload = { 'cmd': 'USER_NOT_ENOUGH' }
                 user.ws.sendMessage(json.dumps(payload))
             self.cm.next_round()
+        self.cm.screencast({ 'cmd': 'SCREEN_USER_QUIT', 'id': ws.user_id })
 
     def broadcast_new_user(self):
         self.user_responses = {} 
