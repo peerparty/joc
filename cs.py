@@ -271,7 +271,11 @@ class ConsensusServer:
         self.users[ws.user_id] = user
         if self.user_count > 1:
             self.broadcast_new_user()
-        self.cm.screencast({ 'cmd': 'SCREEN_USER_JOIN', 'id': ws.user_id })
+        self.cm.screencast({
+            'cmd': 'SCREEN_USER_JOIN',
+            'id': ws.user_id,
+            'count': self.user_count
+        })
         return user 
 
     def rm_user(self, ws):
