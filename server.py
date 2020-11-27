@@ -28,16 +28,20 @@ class ConsensusManager:
         self.server_count = 0
         self.screens = []
         self.stmts = [
-            "The Netherlands can do without the EU",
-            "The leaders of this country do not represent me",
-            "You have to pay a lot to be a politician.",
-            "Most politicians are reliable (or unreliable)",
-            "It is the large companies that ultimately govern us",
-            "It would be good if more low-educated people entered the parliament",
-            "If people don't feel well represented, they have to take action themselves.",
-            "In a democracy, the minority must adapt to the majority",
-            "Politicians must keep their election promise at all costs.",
-            "Lobbyists should be banned."
+          #"Cats are better than dogs",
+          #"The corona pandemic proofs that we are able and willing to radically change once the situation gets serious enough.",
+          "A more sustainable world does not start at home",
+#          "Een beter milieu begint NIET bij jezelf",
+#          "Als de situatie ernstig genoeg is, zijn we bereid en in staat tot radicale verandering, zo bewijst de coronapandemie",
+#            "The leaders of this country do not represent me",
+#            "You have to pay a lot to be a politician.",
+#            "Most politicians are reliable (or unreliable)",
+#            "It is the large companies that ultimately govern us",
+#            "It would be good if more low-educated people entered the parliament",
+#            "If people don't feel well represented, they have to take action themselves.",
+#            "In a democracy, the minority must adapt to the majority",
+#            "Politicians must keep their election promise at all costs.",
+#            "Lobbyists should be banned."
         ]
 
     def create_server(self):
@@ -49,7 +53,8 @@ class ConsensusManager:
 
     def add_user(self, ws, server_id):
         cs = self.servers[self.last_server_id]
-        if self.running:
+        # This is only for the installation - JBG
+        if self.running or len(cs.users) == 4:
             ws.sendMessage(json.dumps({
                 'cmd': 'USER_FULL',
             }))

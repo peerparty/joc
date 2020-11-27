@@ -63,6 +63,12 @@ class Question(Node):
             or (count_no > 0 and count_yes == 0)
         )
 
+    def get_user_answer(self, user_id):
+        for answer in self.answers:
+          if answer.user.id == user_id:
+            return answer
+        return None
+
 class ConsensusServer:
     def __init__(self, cm):
         self.answer_time = 30 
@@ -87,7 +93,8 @@ class ConsensusServer:
 
     def answer_response(self, user_id, ans):
         user = self.users[user_id]
-        user.q.add_answer(Answer(user, ans))
+        if user.q.get_user_answer(user_id) == None:
+            user.q.add_answer(Answer(user, ans))
         self.print_root()
 
     def prompt_response(self, user_id, prompt):
