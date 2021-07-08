@@ -28,9 +28,20 @@ class ConsensusManager:
         self.server_count = 0
         self.screens = []
         self.stmts = [
+          "De enige oplossing tegen meer vliegvelden is dat wij allen minder vliegen",
+          #"Soms moet je politieke keuzes gewoon doordrukken in landsbelang. Vliegveld Lelystad is daar een voorbeeld van.",
+          #"Ik zou een goede dictator zijn",
+          #"Pinguins zijn cooler dan zebras",
+          #"We gaan een nieuw tijdperk in, het verdwijnen winkelaanbod in de binnenstad is niet te keren."
+          #"Horeca en wonen is een goed alternatief voor winkels",
+          #"Honden zijn veel leuker dan katten",
           #"Cats are better than dogs",
+          #"Ik zou een goede dictator zijn.",
+          #"Pinksteren is een religieuze dag. Dus dan zou heel Nederland dezelfde vrijheden moeten krijgen als alle religieuze bijeenkomsten tijdens de corona lockdown",
+          #"de abortuswetgeving moet worden bepaald door referenda waar alleen mensen met een baarmoeder mogen stemmen."
+          #"Consensus can help to create a less polarized online discourse",
           #"The corona pandemic proofs that we are able and willing to radically change once the situation gets serious enough.",
-          "A more sustainable world does not start at home",
+#          "A more sustainable world does not start at home",
 #          "Een beter milieu begint NIET bij jezelf",
 #          "Als de situatie ernstig genoeg is, zijn we bereid en in staat tot radicale verandering, zo bewijst de coronapandemie",
 #            "The leaders of this country do not represent me",
@@ -54,11 +65,11 @@ class ConsensusManager:
     def add_user(self, ws, server_id):
         cs = self.servers[self.last_server_id]
         # This is only for the installation - JBG
-        if self.running or len(cs.users) == 4:
-            ws.sendMessage(json.dumps({
-                'cmd': 'USER_FULL',
-            }))
-        elif server_id != self.last_server_id or ws.user_id not in cs.users:
+        #if self.running or len(cs.users) == 4:
+        #    ws.sendMessage(json.dumps({
+        #        'cmd': 'USER_FULL',
+        #    }))
+        if server_id != self.last_server_id or ws.user_id not in cs.users:
             user = cs.add_user(ws)
             print("created user %d @ server %d" %
                   (user.id, self.last_server_id))
