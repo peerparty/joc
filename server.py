@@ -113,9 +113,9 @@ class ConsensusManager:
         elif cmd == 'USER_PROMPT':
             cs = self.servers[data['server_id']]
             cs.prompt_response(data['id'], data['val'])
-        elif cmd == 'USER_RESPONSE':
-            cs = self.servers[data['server_id']]
-            cs.check_start(data['id'], data['val'])
+        #elif cmd == 'USER_RESPONSE':
+        #    cs = self.servers[data['server_id']]
+        #    cs.check_start(data['id'], data['val'])
 
         # SCREEN COMMANDS - JBG
         elif cmd == 'SCREEN_JOIN':
@@ -123,16 +123,15 @@ class ConsensusManager:
             self.screen_init(ws)
 
         # ADMIN COMMANDS - JBG
-#        elif cmd == 'ADMIN_CREATE':
-#            server_id = self.create_server()
-#            ws.sendMessage(json.dumps({
-#                'cmd': 'ADMIN_SERVER_CREATED',
-#                'id': server_id
-#            }))
-#        elif cmd == 'ADMIN_START':
-#            cs = self.servers[data['id']]  
-#            cs.start(data['val'])
-#
+        elif cmd == 'ADMIN_START':
+            cs = self.servers[self.last_server_id]  
+            cs.start(data['val'])
+
+        # ADMIN COMMANDS - JBG
+        elif cmd == 'ADMIN_STOP':
+            cs = self.servers[self.last_server_id]  
+            cs.stop()
+
     def screen_init(self, ws):
         cs = self.servers[self.last_server_id]  
         ws.sendMessage(json.dumps({
@@ -210,17 +209,16 @@ def main():
         cm = ConsensusManager()
         cm.next_round()
 
-        ws_server = ws.WS(cm.handle_msg, cm.rm_user)
+        cm.ws_server = ws.WS(cm.handle_msg, cm.rm_user)
         #ws_thread = threading.Thread(target=ws_server.start)
         #ws_thread.daemon = True
         #ws_thread.start()
-        ws_server.start()
+        cm.ws_server.start()
 
     except KeyboardInterrupt:
         print("^C received, shutting down server")
-        ws_server.stop()
+        cm.ws_server.stop()
 
 if __name__== "__main__":
     main()
     
-

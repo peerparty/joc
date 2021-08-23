@@ -24,7 +24,7 @@ class WS():
 
   def stop(self):
     print("^C received, shutting down server")
-    self.server.socket.close() 
+    self.server.close() 
 
 class WSClient(WebSocket):
 

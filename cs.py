@@ -217,8 +217,8 @@ class ConsensusServer:
     def collect_answers(self):
         #print("collect_answers")
         self.broadcast_questions()
-        t = threading.Timer(self.answer_time, self.close_answers)
-        t.start()
+        self.ansTimer = threading.Timer(self.answer_time, self.close_answers)
+        self.ansTimer.start()
 
     def close_prompts(self):
         #print("close_prompts")
@@ -240,8 +240,8 @@ class ConsensusServer:
         #print("collect_prompts")
         self.broadcast_prompts()
 
-        t = threading.Timer(self.prompt_time, self.close_prompts)
-        t.start()
+        self.promptTimer = threading.Timer(self.prompt_time, self.close_prompts)
+        self.promptTimer.start()
 
     def get_emoji(self, state):
         if state == QuestionState.OPEN:
@@ -311,14 +311,13 @@ class ConsensusServer:
             payload = { 'cmd': 'USER_WAIT' }
             user.ws.sendMessage(json.dumps(payload))
     
-    def check_start(self, user_id, val):
-
-        self.user_responses[user_id] = val
-        if (len(self.user_responses) == len(self.users) and
-            sum(self.user_responses.values()) == len(self.users)):
-            self.cm.start_cs()
-        elif len(self.user_responses) == len(self.users):
-          self.broadcast_not_enough()
+    #def check_start(self, user_id, val):
+    #    self.user_responses[user_id] = val
+    #    if (len(self.user_responses) == len(self.users) and
+    #        sum(self.user_responses.values()) == len(self.users)):
+    #        self.cm.start_cs()
+    #    elif len(self.user_responses) == len(self.users):
+    #      self.broadcast_not_enough()
         
     def end_session(self): 
         self.send_done()
@@ -330,7 +329,6 @@ class ConsensusServer:
       self.cm.not_enough()
 
     def start(self, stmt):
-        #print("init_questions")
         #print("Enter the starting question:")
         #question = input()
         if len(self.users) > 1:        
@@ -339,7 +337,15 @@ class ConsensusServer:
             self.collect_answers()
         else:
             broadcast_not_enough()
-        t = threading.Timer(self.session_time, self.end_session)
-        t.start()
+        self.sessTimer = threading.Timer(self.session_time, self.end_session)
+        self.sessTimer.start()
 
+    def stop(self):
+        self.send_done()
+        try: self.ansTimer.cancel()
+        except: print("No ansTimer to cancel.")
+        try: self.promptTimer.cancel()
+        except: print("No promptTimer top cancel.")
+        try: self.sessTimer.cancel()
+        except: print("No sessTimer to cancel.")
 
