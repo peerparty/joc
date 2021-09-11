@@ -90,19 +90,20 @@ class ConsensusServer:
 
         for user_id, user in self.users.items():
             user.questions.append(q)
+        return q
 
     def answer_response(self, user_id, ans):
         user = self.users[user_id]
         if user.q.get_user_answer(user_id) == None:
             user.q.add_answer(Answer(user, ans))
-        self.print_root()
+        self.print_branch(user.q)
 
     def prompt_response(self, user_id, prompt):
         user = self.users[user_id]
         prompt = prompt.strip()
         if len(prompt) > 0: 
-            self.add_question(prompt, user.p.ques)
-        self.print_root()
+            q = self.add_question(prompt, user.p.ques)
+            self.print_branch(q)
 
     def get_height(self):
         return len([[node for node in children]
@@ -110,6 +111,13 @@ class ConsensusServer:
 
     def get_siblings(self, question):
         return question.parent.children
+
+    def get_branch(self, question, branch):
+        branch.append(question)
+        if question.parent:
+            return self.get_branch(question.parent, branch)
+        else:
+            return branch
 
     def sibling_consensus(self, question):
         sibs = self.get_siblings(question)
@@ -125,7 +133,8 @@ class ConsensusServer:
             elif not parent.state == QuestionState.REASKED:
                 #print("the reask %s %s" % (parent.name, parent.state))
                 parent.state = QuestionState.REASKED 
-                self.add_question(parent.name, parent=parent.parent)
+                q = self.add_question(parent.name, parent=parent.parent)
+                self.print_branch(q)
 
     def create_prompt(self, question, ans):
         ans.user.prompts.append(Prompt(question, ans))
@@ -207,6 +216,7 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
+
                 payload = {
                     'cmd': 'USER_QUESTION',
                     'txt': user.q.name,
@@ -263,6 +273,18 @@ class ConsensusServer:
         self.cm.screencast({
             'cmd': 'SCREEN_TREE',
             'data': exporter.export(self.root)
+        })
+
+    def print_branch(self, question):
+        branch = self.get_branch(question, [])
+        data = [{
+            'name': q.name,
+            'state': q.state,
+            'answers': [{'val': a.val} for a in q.answers]
+            } for q in branch]
+        self.cm.screencast({
+            'cmd': 'SCREEN_BRANCH',
+            'data': data
         })
 
     def print_users(self):
