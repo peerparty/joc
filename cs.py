@@ -103,7 +103,7 @@ class ConsensusServer:
         prompt = prompt.strip()
         if len(prompt) > 0: 
             q = self.add_question(prompt, user.p.ques)
-            self.print_branch(q)
+            self.print_root()
 
     def get_height(self):
         return len([[node for node in children]
