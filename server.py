@@ -28,7 +28,7 @@ class ConsensusManager:
         self.server_count = 0
         self.screens = []
         self.stmts = [
-          "De enige oplossing tegen meer vliegvelden is dat wij allen minder vliegen",
+          "...",
           #"Soms moet je politieke keuzes gewoon doordrukken in landsbelang. Vliegveld Lelystad is daar een voorbeeld van.",
           #"Ik zou een goede dictator zijn",
           #"Pinguins zijn cooler dan zebras",
