@@ -345,6 +345,7 @@ class ConsensusServer:
         self.send_done()
 
     def broadcast_not_enough(self):
+      print("NOT ENOUGH USERS")
       for user_id, user in self.users.items():
           payload = { 'cmd': 'USER_NOT_ENOUGH' }
           user.ws.sendMessage(json.dumps(payload))
@@ -358,7 +359,7 @@ class ConsensusServer:
             self.print_root()
             self.collect_answers()
         else:
-            broadcast_not_enough()
+            self.broadcast_not_enough()
         self.sessTimer = threading.Timer(self.session_time, self.end_session)
         self.sessTimer.start()
 

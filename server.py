@@ -24,7 +24,7 @@ class ConsensusManager:
         self.tutorial_time = 28 
         #self.tutorial_time = 5 
         self.servers = {}
-        self.last_server_id = -1
+        self.last_server_id = 0 
         self.server_count = 0
         self.screens = []
         self.stmts = [
@@ -62,14 +62,14 @@ class ConsensusManager:
         self.server_count += 1
         return self.last_server_id
 
-    def add_user(self, ws, server_id):
+    def add_user(self, ws):
         cs = self.servers[self.last_server_id]
         # This is only for the installation - JBG
         #if self.running or len(cs.users) == 4:
         #    ws.sendMessage(json.dumps({
         #        'cmd': 'USER_FULL',
         #    }))
-        if server_id != self.last_server_id or ws.user_id not in cs.users:
+        if ws.user_id not in cs.users:
             user = cs.add_user(ws)
             print("created user %d @ server %d" %
                   (user.id, self.last_server_id))
@@ -85,7 +85,6 @@ class ConsensusManager:
                 server_id,
                 self.last_server_id,
                 ws.user_id)
-        
         self.screencast({
             'cmd': 'SCREEN_USER_COUNT',
             'count': cs.user_count 
@@ -106,7 +105,7 @@ class ConsensusManager:
 
         # USER COMMANDS - JBG
         if cmd == 'USER_HELLO':
-            self.add_user(ws, data['server_id'])
+            self.add_user(ws)
         elif cmd == 'USER_ANSWER':
             cs = self.servers[data['server_id']]
             cs.answer_response(data['id'], data['val'])
@@ -124,6 +123,7 @@ class ConsensusManager:
 
         # ADMIN COMMANDS - JBG
         elif cmd == 'ADMIN_START':
+            print("ROUND START")
             cs = self.servers[self.last_server_id]  
             cs.start(data['val'])
 
@@ -188,7 +188,7 @@ class ConsensusManager:
 
     def not_enough(self):
         self.screencast({ 'cmd': 'SCREEN_NOT_ENOUGH' })
-        self.next_round()
+        #self.next_round()
         
     def next_round(self):
         self.stmt = random.choice(self.stmts)
