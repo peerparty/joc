@@ -216,12 +216,19 @@ class ConsensusServer:
             user.ws.sendMessage(json.dumps(payload))
             if len(user.questions) > 0:
                 user.q = user.questions.pop(0)
-
+                branch = self.get_branch(user.q, [])
+                branch = [{
+                    'name': q.name,
+                    'state': q.state,
+                    'answers': [{'val': a.val} for a in q.answers]
+                } for q in branch]
                 payload = {
                     'cmd': 'USER_QUESTION',
                     'txt': user.q.name,
-                    'time': self.answer_time
+                    'time': self.answer_time,
+                    'branch': branch 
                 }
+                print("payload", payload)
                 user.ws.sendMessage(json.dumps(payload))
 
     def collect_answers(self):
